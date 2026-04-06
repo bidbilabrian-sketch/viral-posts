@@ -11,120 +11,162 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f0f0f;color:#fff;min-height:100vh;}
-#app{max-width:480px;margin:0 auto;padding:16px;}
-#header{display:flex;align-items:center;justify-content:space-between;padding:12px 0 16px;}
-#logo{width:36px;height:36px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;}
-#logo svg{fill:#0a0a0a;width:16px;height:16px;}
-#appname{font-size:15px;font-weight:600;color:#fff;}
-#appsub{font-size:11px;color:#666;}
-#refresh-btn{padding:7px 16px;border-radius:20px;border:1px solid #333;background:transparent;color:#999;font-size:12px;cursor:pointer;}
-#refresh-btn:active{background:#1a1a1a;}
-#status-bar{padding:10px 14px;border-radius:12px;background:#1a1a1a;border:1px solid #222;font-size:12px;color:#666;margin-bottom:14px;}
-#post-tabs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#fff;min-height:100vh;}
+#app{max-width:420px;margin:0 auto;padding:16px;}
+
+/* Header */
+#header{display:flex;align-items:center;justify-content:space-between;padding:12px 0 20px;}
+#logo{width:38px;height:38px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+#logo svg{fill:#0a0a0a;width:17px;height:17px;}
+#appname{font-size:16px;font-weight:700;color:#fff;letter-spacing:-0.3px;}
+#appsub{font-size:11px;color:#444;}
+#refresh-btn{padding:7px 16px;border-radius:20px;border:1px solid #222;background:transparent;color:#666;font-size:12px;cursor:pointer;white-space:nowrap;}
+
+/* Status */
+#status-bar{padding:10px 14px;border-radius:10px;background:#111;border:1px solid #1a1a1a;font-size:12px;color:#555;margin-bottom:16px;}
+
+/* Post tabs */
+#post-tabs{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:2px;}
 #post-tabs::-webkit-scrollbar{display:none;}
-.ptab{padding:7px 14px;border-radius:20px;border:1px solid #2a2a2a;background:#1a1a1a;color:#666;font-size:12px;cursor:pointer;white-space:nowrap;font-family:inherit;}
-.ptab.active{background:#fff;color:#0a0a0a;border-color:#fff;}
-#slide-wrap{background:#1a1a1a;border-radius:16px;padding:12px;border:1px solid #222;margin-bottom:10px;}
+.ptab{padding:7px 16px;border-radius:20px;border:1px solid #1a1a1a;background:#111;color:#555;font-size:12px;cursor:pointer;white-space:nowrap;font-family:inherit;transition:all 0.15s;}
+.ptab.active{background:#fff;color:#0a0a0a;border-color:#fff;font-weight:700;}
+
+/* Slide viewer — 4:5 portrait */
+#slide-viewer-wrap{background:#111;border-radius:18px;padding:12px;border:1px solid #1a1a1a;margin-bottom:10px;}
 #slide-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-#slide-label{font-size:11px;color:#555;}
-#slide-nav{display:flex;align-items:center;gap:8px;}
-.snav{width:28px;height:28px;border-radius:50%;border:1px solid #333;background:#0f0f0f;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;color:#888;}
-.snav:active{background:#2a2a2a;}
-#slide-count{font-size:11px;color:#555;}
-#slide-canvas{width:100%;aspect-ratio:1/1;border-radius:10px;overflow:hidden;background:#000;}
+#slide-label{font-size:11px;color:#333;}
+#snav{display:flex;align-items:center;gap:8px;}
+.nb{width:30px;height:30px;border-radius:50%;border:1px solid #222;background:#0a0a0a;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;color:#666;}
+.nb:active{background:#1a1a1a;}
+#slide-count{font-size:11px;color:#333;min-width:36px;text-align:center;}
+
+/* 4:5 portrait canvas */
+#slide-canvas{width:100%;aspect-ratio:4/5;border-radius:12px;overflow:hidden;background:#000;}
+
+/* Dots */
 #slide-dots{display:flex;justify-content:center;gap:5px;margin-top:10px;}
-.sdot{width:5px;height:5px;border-radius:50%;background:#333;cursor:pointer;transition:all 0.2s;}
-.sdot.active{background:#fff;width:14px;border-radius:3px;}
-#dl-btn{width:100%;padding:12px;border:1px solid #2a2a2a;border-radius:12px;background:#1a1a1a;color:#888;font-size:13px;cursor:pointer;font-family:inherit;margin-bottom:16px;}
-#dl-btn:active{background:#222;}
-.icard{background:#1a1a1a;border:1px solid #222;border-radius:14px;padding:14px 16px;margin-bottom:10px;}
-.ilabel{font-size:10px;letter-spacing:1.5px;color:#555;margin-bottom:6px;text-transform:uppercase;}
-.ival{font-size:13px;color:#ccc;line-height:1.55;}
-.ival.big{font-size:15px;font-weight:600;color:#fff;}
-.cbtn{margin-top:10px;padding:7px 16px;border-radius:20px;border:1px solid #2a2a2a;background:#0f0f0f;color:#888;font-size:12px;cursor:pointer;font-family:inherit;}
-.cbtn:active{background:#2a2a2a;color:#fff;}
-.badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:11px;background:#0d2e1a;color:#22c55e;margin-bottom:10px;border:1px solid #166534;}
-#manual-wrap{background:#1a1a1a;border:1px solid #222;border-radius:14px;padding:14px 16px;margin-bottom:10px;}
-#csv-input{width:100%;height:100px;font-size:11px;padding:8px;border:1px solid #333;border-radius:8px;background:#0f0f0f;color:#ccc;font-family:monospace;resize:vertical;margin-top:8px;}
-#load-csv-btn{margin-top:8px;width:100%;padding:10px;border-radius:10px;border:none;background:#fff;color:#0a0a0a;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
-.spinner{width:28px;height:28px;border:2px solid #333;border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;}
+.sdot{width:5px;height:5px;border-radius:50%;background:#222;cursor:pointer;transition:all 0.2s;}
+.sdot.active{background:#fff;width:16px;border-radius:3px;}
+
+/* Download button */
+#dl-btn{width:100%;padding:14px;border-radius:12px;border:none;background:#fff;color:#0a0a0a;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px;font-family:inherit;letter-spacing:-0.2px;}
+#dl-btn:active{opacity:0.88;}
+
+/* Download all button */
+#dl-all-btn{width:100%;padding:12px;border-radius:12px;border:1px solid #1a1a1a;background:#111;color:#666;font-size:13px;cursor:pointer;margin-bottom:16px;font-family:inherit;}
+#dl-all-btn:active{background:#1a1a1a;}
+
+/* Info cards */
+.icard{background:#111;border:1px solid #1a1a1a;border-radius:14px;padding:14px 16px;margin-bottom:10px;}
+.ilabel{font-size:10px;letter-spacing:1.5px;color:#333;margin-bottom:6px;text-transform:uppercase;}
+.ival{font-size:13px;color:#aaa;line-height:1.55;}
+.ival.big{font-size:16px;font-weight:700;color:#fff;line-height:1.2;}
+.cbtn{margin-top:10px;padding:8px 18px;border-radius:20px;border:1px solid #1a1a1a;background:#0a0a0a;color:#666;font-size:12px;cursor:pointer;font-family:inherit;transition:all 0.15s;}
+.cbtn:active{background:#1a1a1a;color:#fff;}
+.badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:11px;background:#0d2e1a;color:#22c55e;margin-bottom:10px;border:1px solid #14532d;}
+
+/* Manual import */
+#manual-wrap{background:#111;border:1px solid #1a1a1a;border-radius:14px;padding:14px 16px;margin-bottom:10px;}
+#csv-input{width:100%;height:90px;font-size:11px;padding:8px;border:1px solid #222;border-radius:8px;background:#0a0a0a;color:#aaa;font-family:monospace;resize:vertical;margin-top:8px;}
+#load-csv-btn{margin-top:8px;width:100%;padding:12px;border-radius:10px;border:none;background:#fff;color:#0a0a0a;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+
+/* Loading spinner */
+.spinner{width:26px;height:26px;border:2px solid #222;border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;}
 @keyframes spin{to{transform:rotate(360deg);}}
 </style>
 </head>
 <body>
 <div id="app">
+
   <div id="header">
-    <div style="display:flex;align-items:center;gap:10px;">
+    <div style="display:flex;align-items:center;gap:11px;">
       <div id="logo"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
-      <div><div id="appname">Zenvault</div><div id="appsub">@zenvault.co · Post Viewer</div></div>
+      <div><div id="appname">Zenvault</div><div id="appsub">@zenvault.co · Daily posts</div></div>
     </div>
-    <button id="refresh-btn" onclick="loadPosts()">↻ Refresh</button>
+    <button id="refresh-btn" onclick="loadPosts()">&#8635; Refresh</button>
   </div>
-  <div id="status-bar">Connecting to your Google Sheet...</div>
+
+  <div id="status-bar">Connecting to Google Sheets...</div>
   <div id="post-tabs"></div>
-  <div id="slide-wrap">
+
+  <div id="slide-viewer-wrap">
     <div id="slide-topbar">
-      <span id="slide-label">Slide preview</span>
-      <div id="slide-nav">
-        <button class="snav" onclick="prevSlide()">&#8592;</button>
-        <span id="slide-count">— / —</span>
-        <button class="snav" onclick="nextSlide()">&#8594;</button>
+      <span id="slide-label">4:5 portrait · Instagram optimised</span>
+      <div id="snav">
+        <button class="nb" onclick="prevSlide()">&#8592;</button>
+        <span id="slide-count">&#8212;</span>
+        <button class="nb" onclick="nextSlide()">&#8594;</button>
       </div>
     </div>
-    <div id="slide-canvas"><div style="display:flex;flex-direction:column;align-items:center;justify-content:center;aspect-ratio:1/1;color:#444;gap:12px;"><div class="spinner"></div><span style="font-size:12px;">Loading posts...</span></div></div>
+    <div id="slide-canvas">
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;color:#333;gap:12px;">
+        <div class="spinner"></div>
+        <span style="font-size:12px;">Loading posts...</span>
+      </div>
+    </div>
     <div id="slide-dots"></div>
   </div>
-  <button id="dl-btn" onclick="downloadSlide()">&#8595; Download slide as PNG</button>
-  <div id="info-panel"></div>
-</div>
-<script>
-const SHEET_ID="15E8efjFYWB0jKcJR7uu6TSDuja7AgUIcJYmY1caPmxs";
-const GID="517622713";
-let posts=[],currentPost=0,currentSlide=0;
 
-function setStatus(msg){document.getElementById('status-bar').textContent=msg;}
+  <button id="dl-btn" onclick="downloadSlide()">&#8595; Download This Slide (PNG)</button>
+  <button id="dl-all-btn" onclick="downloadAll()">&#8595; Download All 7 Slides</button>
+
+  <div id="info-panel"></div>
+
+</div>
+
+<script>
+const SHEET_ID = "15E8efjFYWB0jKcJR7uu6TSDuja7AgUIcJYmY1caPmxs";
+const GID      = "517622713";
+let posts = [], currentPost = 0, currentSlide = 0;
+let downloadQueue = [];
+
+// ── LOAD ─────────────────────────────────────────────────────
+function setStatus(m){document.getElementById('status-bar').textContent=m;}
 
 async function loadPosts(){
   setStatus('Fetching latest posts...');
-  const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
   try{
-    const res=await fetch(url);
-    if(!res.ok)throw new Error('HTTP '+res.status);
+    const res = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`);
+    if(!res.ok) throw new Error('blocked');
     parseCSV(await res.text());
   }catch(e){
-    setStatus('Auto-load blocked. Use manual import below.');
-    showManualInput();
+    setStatus('Auto-load blocked — paste your CSV below.');
+    showManual();
   }
 }
 
-function showManualInput(){
+function showManual(){
   document.getElementById('info-panel').innerHTML=`
     <div id="manual-wrap">
       <div class="ilabel">Manual import</div>
-      <div class="ival" style="font-size:12px;">In Google Sheets: File → Download → CSV. Open file, select all, copy and paste below.</div>
+      <div class="ival" style="font-size:12px;">Google Sheets → File → Download → CSV → open → copy all → paste here</div>
       <textarea id="csv-input" placeholder="Paste CSV data here..."></textarea>
       <button id="load-csv-btn" onclick="parseCSV(document.getElementById('csv-input').value)">Load My Posts</button>
     </div>`;
 }
 
 function parseCSV(csv){
-  const lines=csv.trim().split('\n');
-  if(lines.length<2){setStatus('No posts found.');return;}
-  posts=[];
+  const lines = csv.trim().split('\n');
+  if(lines.length<2){setStatus('No posts found. Run generateDailyPosts first.');return;}
+  posts = [];
   for(let i=1;i<lines.length;i++){
-    const cols=splitCSV(lines[i]);
-    if(!cols||cols.length<5)continue;
-    const g=(idx)=>(cols[idx]||'').replace(/^"|"$/g,'').replace(/""/g,'"').trim();
-    posts.push({date:g(0),num:g(1),niche:g(2),style:g(3),topic:g(4),hook:g(5),slides:[g(6),g(7),g(8),g(9),g(10)].filter(s=>s),caption:g(11),hashtags:g(12),cta:g(13),status:g(14)});
+    const c = splitCSV(lines[i]);
+    if(!c||c.length<5) continue;
+    const g=(n)=>(c[n]||'').replace(/^"|"$/g,'').replace(/""/g,'"').trim();
+    posts.push({
+      date:g(0),num:g(1),niche:g(2),style:g(3),topic:g(4),
+      hook:g(5),
+      slides:[g(6),g(7),g(8),g(9),g(10)].filter(s=>s),
+      caption:g(11),hashtags:g(12),cta:g(13),status:g(14)
+    });
   }
   if(!posts.length){setStatus('No posts found. Run generateDailyPosts in Apps Script first.');return;}
-  const today=new Date().toISOString().split('T')[0];
-  const tp=posts.filter(p=>p.date&&p.date.startsWith(today));
-  posts=tp.length>0?tp:posts.slice(-3);
-  currentPost=0;currentSlide=0;
-  setStatus(`${posts.length} posts ready — ${posts[0]?.date||'today'} · @zenvault.co`);
-  renderTabs();renderSlide();renderDots();updateCount();renderInfo();
+  const today = new Date().toISOString().split('T')[0];
+  const tp = posts.filter(p=>p.date&&p.date.startsWith(today));
+  posts = tp.length>0 ? tp : posts.slice(-3);
+  currentPost=0; currentSlide=0;
+  setStatus(posts.length+' posts ready · '+( posts[0]?.date||'today')+' · @zenvault.co');
+  renderTabs(); renderSlide(); renderDots(); updateCount(); renderInfo();
 }
 
 function splitCSV(line){
@@ -138,102 +180,384 @@ function splitCSV(line){
   r.push(c);return r;
 }
 
+// ── TABS ─────────────────────────────────────────────────────
 function renderTabs(){
   const t=document.getElementById('post-tabs');t.innerHTML='';
   posts.forEach((p,i)=>{
     const b=document.createElement('button');
     b.className='ptab'+(i===currentPost?' active':'');
-    b.textContent='Post '+(i+1)+(p.topic?' · '+p.topic.substring(0,16):'');
+    b.textContent='Post '+(i+1)+(p.topic?' · '+p.topic.substring(0,12):'');
     b.onclick=()=>{currentPost=i;currentSlide=0;renderTabs();renderSlide();renderDots();updateCount();renderInfo();};
     t.appendChild(b);
   });
 }
 
+// ── SLIDE BUILDER — 4:5 PORTRAIT, TOP LEVEL DESIGN ──────────
 function buildSlides(post){
-  const slides=[];
-  const hook=post.hook||'YOUR HOOK HERE';
-  const topic=(post.topic||'').toUpperCase();
-  const total=post.slides.length+2;
-  slides.push(`<div id="slide-render" style="width:100%;height:100%;background:#0a0a0a;display:flex;flex-direction:column;justify-content:space-between;padding:24px;font-family:Georgia,serif;">
-    <div style="display:flex;justify-content:space-between;align-items:center;"><div style="width:20px;height:2px;background:#fff;opacity:0.5;"></div><span style="font-size:8px;letter-spacing:3px;color:#fff;opacity:0.3;font-family:sans-serif;">${topic}</span></div>
-    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:12px;padding:12px 0;">
-      <div style="font-size:clamp(16px,4vw,26px);font-weight:700;color:#fff;line-height:1.15;">${hook}</div>
-      <div style="width:28px;height:2px;background:#fff;opacity:0.2;"></div>
-      <div style="font-size:10px;color:#fff;opacity:0.35;font-family:sans-serif;letter-spacing:1px;">SWIPE TO LEARN →</div>
-    </div>
-    <div style="display:flex;justify-content:space-between;"><span style="font-size:8px;color:#fff;opacity:0.2;font-family:sans-serif;">01 / ${total}</span><span style="font-size:8px;color:#fff;opacity:0.2;font-family:sans-serif;">@zenvault.co</span></div>
-  </div>`);
-  post.slides.forEach((s,i)=>{
-    const parts=s.split(':');const raw=parts[0]||'';const body=parts.slice(1).join(':').trim()||s;
-    const m=raw.match(/\[(\d+)\]\s*(.*)/);const num=m?m[1]:String(i+1).padStart(2,'0');const headline=m?m[2]:raw;
-    const bg=i%2===0?'#ffffff':'#f4f4f4';
-    slides.push(`<div id="slide-render" style="width:100%;height:100%;background:${bg};display:flex;flex-direction:column;justify-content:space-between;padding:24px;font-family:Georgia,serif;">
-      <div style="display:flex;justify-content:space-between;"><span style="font-size:8px;letter-spacing:2px;color:#0a0a0a;opacity:0.25;font-family:sans-serif;">POINT</span><span style="font-size:8px;color:#0a0a0a;opacity:0.2;font-family:sans-serif;">${String(i+2).padStart(2,'0')} / ${total}</span></div>
-      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:10px 0;">
-        <div style="font-size:clamp(32px,8vw,52px);font-weight:700;color:#0a0a0a;opacity:0.05;line-height:1;font-family:sans-serif;margin-bottom:-10px;">${num}</div>
-        <div style="font-size:clamp(13px,3.5vw,18px);font-weight:700;color:#0a0a0a;line-height:1.2;">${headline}</div>
-        <div style="width:22px;height:2px;background:#0a0a0a;opacity:0.12;"></div>
-        <div style="font-size:11px;color:#0a0a0a;opacity:0.5;font-family:sans-serif;line-height:1.55;">${body}</div>
+  const slides = [];
+  const hook   = post.hook  || 'YOUR HOOK HERE';
+  const topic  = (post.topic||'AI TOOLS').toUpperCase();
+  const total  = post.slides.length + 2;
+
+  // ── SLIDE 1: HOOK ─────────────────────────────────────────
+  slides.push(`
+  <div id="sr" style="
+    width:100%;height:100%;
+    background:#0a0a0a;
+    display:flex;flex-direction:column;
+    padding:clamp(28px,6%,44px);
+    font-family:Georgia,serif;
+    position:relative;overflow:hidden;">
+
+    <!-- Subtle texture lines -->
+    <div style="position:absolute;top:0;right:0;width:1px;height:100%;background:rgba(255,255,255,0.04);"></div>
+    <div style="position:absolute;bottom:0;left:0;width:100%;height:1px;background:rgba(255,255,255,0.04);"></div>
+
+    <!-- Top row -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:auto;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:28px;height:2px;background:#fff;opacity:0.5;"></div>
+        <span style="font-size:9px;letter-spacing:5px;color:#fff;opacity:0.3;font-family:sans-serif;font-weight:400;">${topic}</span>
       </div>
-      <div style="display:flex;justify-content:flex-end;"><span style="font-size:8px;color:#0a0a0a;opacity:0.15;font-family:sans-serif;">@zenvault.co</span></div>
+      <span style="font-size:9px;color:#fff;opacity:0.2;font-family:sans-serif;">@zenvault.co</span>
+    </div>
+
+    <!-- Main hook — fills the slide -->
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:clamp(20px,5%,36px) 0;">
+      <div style="
+        font-size:clamp(30px,7.5vw,52px);
+        font-weight:900;
+        color:#fff;
+        line-height:1.05;
+        letter-spacing:-1px;
+        margin-bottom:clamp(18px,4%,28px);">
+        ${hook}
+      </div>
+      <div style="width:52px;height:3px;background:#fff;opacity:0.25;margin-bottom:clamp(16px,3.5%,24px);"></div>
+      <div style="font-size:11px;color:#fff;opacity:0.35;font-family:sans-serif;letter-spacing:4px;font-weight:400;">SWIPE TO LEARN &#8594;</div>
+    </div>
+
+    <!-- Bottom row -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:auto;">
+      <div style="
+        padding:7px 14px;
+        border:1px solid rgba(255,255,255,0.15);
+        border-radius:4px;">
+        <span style="font-size:9px;letter-spacing:2px;color:#fff;opacity:0.5;font-family:sans-serif;">1 / ${total}</span>
+      </div>
+      <span style="font-size:10px;color:#fff;opacity:0.25;font-family:sans-serif;">@zenvault.co</span>
+    </div>
+  </div>`);
+
+  // ── SLIDES 2-N: POINTS ────────────────────────────────────
+  post.slides.forEach((s,i)=>{
+    const parts   = s.split(':');
+    const raw     = parts[0]||'';
+    const body    = parts.slice(1).join(':').trim()||s;
+    const m       = raw.match(/\[(\d+)\]\s*(.*)/);
+    const num     = m ? m[1] : String(i+1).padStart(2,'0');
+    const headline= (m ? m[2] : raw).toUpperCase();
+    const bg      = i%2===0 ? '#ffffff' : '#f0f0f0';
+    const slideN  = i+2;
+
+    slides.push(`
+    <div id="sr" style="
+      width:100%;height:100%;
+      background:${bg};
+      display:flex;flex-direction:column;
+      padding:clamp(28px,6%,44px);
+      font-family:Georgia,serif;
+      position:relative;overflow:hidden;">
+
+      <!-- Giant ghost number -->
+      <div style="
+        position:absolute;
+        bottom:-20px;right:-10px;
+        font-size:clamp(140px,35vw,200px);
+        font-weight:900;
+        color:#0a0a0a;
+        opacity:0.04;
+        line-height:1;
+        font-family:sans-serif;
+        user-select:none;
+        pointer-events:none;">
+        ${num}
+      </div>
+
+      <!-- Top row -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:auto;">
+        <span style="font-size:9px;letter-spacing:4px;color:#0a0a0a;opacity:0.25;font-family:sans-serif;font-weight:400;">POINT</span>
+        <span style="font-size:9px;color:#0a0a0a;opacity:0.2;font-family:sans-serif;">${slideN} / ${total}</span>
+      </div>
+
+      <!-- Content -->
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:clamp(14px,3%,22px);position:relative;z-index:1;">
+
+        <!-- Step indicator -->
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:32px;height:32px;border-radius:50%;background:#0a0a0a;display:flex;align-items:center;justify-content:center;">
+            <span style="font-size:12px;font-weight:700;color:#fff;font-family:sans-serif;">${num}</span>
+          </div>
+        </div>
+
+        <!-- Headline -->
+        <div style="
+          font-size:clamp(20px,5vw,34px);
+          font-weight:900;
+          color:#0a0a0a;
+          line-height:1.1;
+          letter-spacing:-0.5px;">
+          ${headline}
+        </div>
+
+        <!-- Divider -->
+        <div style="width:40px;height:3px;background:#0a0a0a;opacity:0.15;"></div>
+
+        <!-- Body -->
+        <div style="
+          font-size:clamp(13px,3vw,17px);
+          color:#333;
+          font-family:sans-serif;
+          font-weight:400;
+          line-height:1.7;">
+          ${body}
+        </div>
+      </div>
+
+      <!-- Bottom -->
+      <div style="display:flex;justify-content:flex-end;align-items:center;margin-top:auto;">
+        <span style="font-size:9px;color:#0a0a0a;opacity:0.18;font-family:sans-serif;">@zenvault.co</span>
+      </div>
     </div>`);
   });
-  slides.push(`<div id="slide-render" style="width:100%;height:100%;background:#0a0a0a;display:flex;flex-direction:column;justify-content:space-between;padding:24px;font-family:Georgia,serif;">
-    <div style="display:flex;justify-content:space-between;"><div style="width:20px;height:2px;background:#fff;opacity:0.4;"></div><span style="font-size:8px;letter-spacing:2px;color:#fff;opacity:0.25;font-family:sans-serif;">FOLLOW FOR MORE</span></div>
-    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:12px;padding:12px 0;">
-      <div style="font-size:clamp(13px,3.5vw,18px);font-weight:700;color:#fff;line-height:1.25;">${post.cta||'Follow @zenvault.co for daily content'}</div>
-      <div style="width:24px;height:2px;background:#fff;opacity:0.15;"></div>
-      <div style="font-size:10px;color:#fff;opacity:0.3;font-family:sans-serif;">${(post.hashtags||'').split(' ').slice(0,4).join(' ')}</div>
+
+  // ── SAVE REMINDER SLIDE ───────────────────────────────────
+  const saveSlideN = post.slides.length + 2;
+  slides.push(`
+  <div id="sr" style="
+    width:100%;height:100%;
+    background:#f8f8f8;
+    display:flex;flex-direction:column;
+    padding:clamp(28px,6%,44px);
+    font-family:Georgia,serif;
+    position:relative;overflow:hidden;
+    outline:3px solid #0a0a0a;outline-offset:-3px;">
+
+    <!-- Top -->
+    <div style="display:flex;justify-content:space-between;margin-bottom:auto;">
+      <span style="font-size:9px;letter-spacing:4px;color:#0a0a0a;opacity:0.25;font-family:sans-serif;">SAVE THIS</span>
+      <span style="font-size:9px;color:#0a0a0a;opacity:0.2;font-family:sans-serif;">${saveSlideN} / ${total}</span>
     </div>
-    <div style="border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:7px 14px;display:inline-block;width:fit-content;">
-      <span style="font-size:10px;letter-spacing:2px;color:#fff;font-family:sans-serif;opacity:0.7;">@zenvault.co</span>
+
+    <!-- Content -->
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:clamp(16px,3.5%,24px);">
+
+      <!-- Bookmark icon made from shapes -->
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:28px;height:36px;background:#0a0a0a;border-radius:2px 2px 0 0;position:relative;clip-path:polygon(0 0,100% 0,100% 100%,50% 75%,0 100%);"></div>
+        <span style="font-size:12px;letter-spacing:3px;color:#0a0a0a;opacity:0.4;font-family:sans-serif;font-weight:600;">BOOKMARK THIS</span>
+      </div>
+
+      <div style="font-size:clamp(22px,5.5vw,36px);font-weight:900;color:#0a0a0a;line-height:1.1;">
+        Save this post — you'll need it later.
+      </div>
+
+      <div style="width:44px;height:3px;background:#0a0a0a;opacity:0.15;"></div>
+
+      <div style="font-size:clamp(13px,3vw,16px);color:#555;font-family:sans-serif;line-height:1.65;">
+        Most people scroll past. The ones who save it are the ones who actually change. Don't be like most people.
+      </div>
+    </div>
+
+    <!-- Bottom -->
+    <div style="display:flex;justify-content:flex-end;margin-top:auto;">
+      <span style="font-size:9px;color:#0a0a0a;opacity:0.18;font-family:sans-serif;">@zenvault.co</span>
     </div>
   </div>`);
+
+  // ── FINAL SLIDE: CTA ──────────────────────────────────────
+  const ctaSlideN = total;
+  slides.push(`
+  <div id="sr" style="
+    width:100%;height:100%;
+    background:#0a0a0a;
+    display:flex;flex-direction:column;
+    padding:clamp(28px,6%,44px);
+    font-family:Georgia,serif;
+    position:relative;overflow:hidden;">
+
+    <!-- Subtle diagonal accent -->
+    <div style="position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.02);"></div>
+
+    <!-- Top -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:auto;">
+      <div style="width:24px;height:2px;background:#fff;opacity:0.4;"></div>
+      <span style="font-size:9px;letter-spacing:4px;color:#fff;opacity:0.25;font-family:sans-serif;">FOLLOW FOR MORE</span>
+    </div>
+
+    <!-- CTA content -->
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:clamp(16px,3.5%,24px);">
+
+      <div style="font-size:clamp(24px,6vw,40px);font-weight:900;color:#fff;line-height:1.1;">
+        ${post.cta||'Follow @zenvault.co for daily AI tools that build real income.'}
+      </div>
+
+      <div style="width:48px;height:3px;background:#fff;opacity:0.2;"></div>
+
+      <div style="font-size:clamp(12px,2.8vw,15px);color:#fff;opacity:0.4;font-family:sans-serif;line-height:1.6;">
+        New carousel every day. 3 posts. No fluff. Just tools that work.
+      </div>
+    </div>
+
+    <!-- Handle box — prominent -->
+    <div style="
+      margin-top:clamp(20px,5%,32px);
+      border:2px solid rgba(255,255,255,0.3);
+      border-radius:8px;
+      padding:clamp(12px,3%,18px) clamp(20px,5%,28px);
+      display:flex;align-items:center;justify-content:center;">
+      <span style="
+        font-size:clamp(14px,3.5vw,20px);
+        letter-spacing:3px;
+        color:#fff;
+        font-family:sans-serif;
+        font-weight:700;">
+        @ZENVAULT.CO
+      </span>
+    </div>
+  </div>`);
+
   return slides;
 }
 
-function renderSlide(){if(!posts.length)return;document.getElementById('slide-canvas').innerHTML=buildSlides(posts[currentPost])[currentSlide]||'';}
+// ── RENDER ────────────────────────────────────────────────────
+function renderSlide(){
+  if(!posts.length) return;
+  const all = buildSlides(posts[currentPost]);
+  document.getElementById('slide-canvas').innerHTML = all[currentSlide]||'';
+}
+
 function renderDots(){
-  if(!posts.length)return;
-  const total=posts[currentPost].slides.length+2;
-  const dots=document.getElementById('slide-dots');dots.innerHTML='';
-  for(let i=0;i<total;i++){const d=document.createElement('div');d.className='sdot'+(i===currentSlide?' active':'');d.onclick=()=>{currentSlide=i;renderSlide();renderDots();updateCount();};dots.appendChild(d);}
+  if(!posts.length) return;
+  const total = posts[currentPost].slides.length + 3; // +hook +save +cta
+  const dots  = document.getElementById('slide-dots');
+  dots.innerHTML = '';
+  for(let i=0;i<total;i++){
+    const d=document.createElement('div');
+    d.className='sdot'+(i===currentSlide?' active':'');
+    d.onclick=()=>{currentSlide=i;renderSlide();renderDots();updateCount();};
+    dots.appendChild(d);
+  }
 }
-function updateCount(){if(!posts.length)return;document.getElementById('slide-count').textContent=(currentSlide+1)+' / '+(posts[currentPost].slides.length+2);}
-function prevSlide(){if(!posts.length)return;const t=posts[currentPost].slides.length+2;currentSlide=(currentSlide-1+t)%t;renderSlide();renderDots();updateCount();}
-function nextSlide(){if(!posts.length)return;const t=posts[currentPost].slides.length+2;currentSlide=(currentSlide+1)%t;renderSlide();renderDots();updateCount();}
 
+function updateCount(){
+  if(!posts.length) return;
+  const total = posts[currentPost].slides.length + 3;
+  document.getElementById('slide-count').textContent=(currentSlide+1)+' / '+total;
+}
+
+function prevSlide(){
+  if(!posts.length) return;
+  const t=posts[currentPost].slides.length+3;
+  currentSlide=(currentSlide-1+t)%t;
+  renderSlide();renderDots();updateCount();
+}
+function nextSlide(){
+  if(!posts.length) return;
+  const t=posts[currentPost].slides.length+3;
+  currentSlide=(currentSlide+1)%t;
+  renderSlide();renderDots();updateCount();
+}
+
+// ── INFO PANEL ────────────────────────────────────────────────
 function renderInfo(){
-  if(!posts.length)return;
-  const p=posts[currentPost];
+  if(!posts.length) return;
+  const p = posts[currentPost];
   document.getElementById('info-panel').innerHTML=`
-    <div class="icard"><div class="badge">✓ Ready to post</div><div class="ilabel">Niche</div><div class="ival">${p.niche||'—'}</div></div>
-    <div class="icard"><div class="ilabel">Hook</div><div class="ival big">${p.hook||'—'}</div></div>
-    <div class="icard"><div class="ilabel">Caption</div><div class="ival">${p.caption||'—'}</div><button class="cbtn" onclick="cp(this,'${encodeURIComponent(p.caption)}')">Copy caption</button></div>
-    <div class="icard"><div class="ilabel">Hashtags</div><div class="ival" style="color:#666;">${p.hashtags||'—'}</div><button class="cbtn" onclick="cp(this,'${encodeURIComponent(p.hashtags)}')">Copy hashtags</button></div>
-    <div class="icard"><div class="ilabel">CTA</div><div class="ival">${p.cta||'—'}</div></div>`;
+    <div class="icard">
+      <div class="badge">&#10003; Ready to post</div>
+      <div class="ilabel">Niche picked by agent</div>
+      <div class="ival">${p.niche||'&#8212;'}</div>
+    </div>
+    <div class="icard">
+      <div class="ilabel">Hook</div>
+      <div class="ival big">${p.hook||'&#8212;'}</div>
+    </div>
+    <div class="icard">
+      <div class="ilabel">Caption</div>
+      <div class="ival">${p.caption||'&#8212;'}</div>
+      <button class="cbtn" onclick="cp(this,'${encodeURIComponent(p.caption)}','Copy caption')">Copy caption</button>
+    </div>
+    <div class="icard">
+      <div class="ilabel">First comment hashtags</div>
+      <div class="ival" style="color:#555;">${p.hashtags||'&#8212;'}</div>
+      <button class="cbtn" onclick="cp(this,'${encodeURIComponent(p.hashtags)}','Copy hashtags')">Copy hashtags</button>
+    </div>
+    <div class="icard">
+      <div class="ilabel">CTA on last slide</div>
+      <div class="ival">${p.cta||'&#8212;'}</div>
+    </div>`;
 }
 
-function cp(btn,encoded){
+function cp(btn,encoded,label){
   navigator.clipboard.writeText(decodeURIComponent(encoded)).then(()=>{
-    const orig=btn.textContent;btn.textContent='Copied!';setTimeout(()=>btn.textContent=orig,1500);
+    const o=btn.textContent;btn.textContent='Copied!';
+    setTimeout(()=>btn.textContent=label,1500);
   });
 }
 
-function downloadSlide(){
-  const el=document.getElementById('slide-render');
+// ── DOWNLOAD ─────────────────────────────────────────────────
+async function captureSlide(el){
+  return new Promise(resolve=>{
+    html2canvas(el,{scale:3,backgroundColor:null,useCORS:true,allowTaint:true}).then(c=>resolve(c));
+  });
+}
+
+async function downloadSlide(){
+  const el = document.getElementById('sr');
   if(!el){alert('No slide to download.');return;}
-  html2canvas(el,{scale:3,backgroundColor:null}).then(c=>{
-    const a=document.createElement('a');
-    a.download=`zenvault-post${currentPost+1}-slide${currentSlide+1}.png`;
-    a.href=c.toDataURL();a.click();
-  });
+  const c = await captureSlide(el);
+  const a = document.createElement('a');
+  a.download=`zenvault-post${currentPost+1}-slide${currentSlide+1}.png`;
+  a.href=c.toDataURL('image/png');a.click();
 }
 
-let touchStartX=0;
-document.addEventListener('touchstart',e=>touchStartX=e.touches[0].clientX);
-document.addEventListener('touchend',e=>{const diff=touchStartX-e.changedTouches[0].clientX;if(Math.abs(diff)>50){diff>0?nextSlide():prevSlide();}});
+async function downloadAll(){
+  if(!posts.length){alert('No posts loaded.');return;}
+  const post  = posts[currentPost];
+  const all   = buildSlides(post);
+  const canvas = document.getElementById('slide-canvas');
+  const btn   = document.getElementById('dl-all-btn');
+  btn.textContent='Downloading... (this takes a moment)';
+  btn.disabled=true;
 
+  for(let i=0;i<all.length;i++){
+    canvas.innerHTML = all[i];
+    await new Promise(r=>setTimeout(r,400));
+    const el = document.getElementById('sr');
+    if(!el) continue;
+    const c = await captureSlide(el);
+    const a = document.createElement('a');
+    a.download=`zenvault-post${currentPost+1}-slide${i+1}.png`;
+    a.href=c.toDataURL('image/png');a.click();
+    await new Promise(r=>setTimeout(r,300));
+  }
+
+  // Restore original slide
+  canvas.innerHTML = all[currentSlide];
+  btn.textContent='&#8595; Download All Slides';
+  btn.disabled=false;
+}
+
+// ── SWIPE SUPPORT ─────────────────────────────────────────────
+let tx=0;
+document.addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
+document.addEventListener('touchend',e=>{
+  const d=tx-e.changedTouches[0].clientX;
+  if(Math.abs(d)>50){d>0?nextSlide():prevSlide();}
+},{passive:true});
+
+// ── INIT ──────────────────────────────────────────────────────
 loadPosts();
 </script>
 </body>
