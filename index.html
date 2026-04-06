@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+<meta name="apple-mobile-web-app-title" content="Viral Posts"/>
+<meta name="theme-color" content="#0a0a0a"/>
+<title>Viral Post Viewer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f0f0f;color:#fff;min-height:100vh;}
+  #app{max-width:480px;margin:0 auto;padding:16px;}
+
+  /* Header */
+  #header{display:flex;align-items:center;justify-content:space-between;padding:12px 0 16px;}
+  #logo{width:36px;height:36px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;}
+  #logo svg{fill:#0a0a0a;width:16px;height:16px;}
+  #appname{font-size:15px;font-weight:600;color:#fff;}
+  #appsub{font-size:11px;color:#666;}
+  #refresh-btn{padding:7px 16px;border-radius:20px;border:1px solid #333;background:transparent;color:#999;font-size:12px;cursor:pointer;}
+  #refresh-btn:active{background:#1a1a1a;}
+
+  /* Status */
+  #status-bar{padding:10px 14px;border-radius:12px;background:#1a1a1a;border:1px solid #222;font-size:12px;color:#666;margin-bottom:14px;}
+
+  /* Post tabs */
+  #post-tabs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px;}
+  #post-tabs::-webkit-scrollbar{display:none;}
+  .ptab{padding:7px 14px;border-radius:20px;border:1px solid #2a2a2a;background:#1a1a1a;color:#666;font-size:12px;cursor:pointer;white-space:nowrap;font-family:inherit;}
+  .ptab.active{background:#fff;color:#0a0a0a;border-color:#fff;}
+
+  /* Slide viewer */
+  #slide-wrap{background:#1a1a1a;border-radius:16px;padding:12px;border:1px solid #222;margin-bottom:10px;}
+  #slide-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  #slide-label{font-size:11px;color:#555;}
+  #slide-nav{display:flex;align-items:center;gap:8px;}
+  .snav{width:28px;height:28px;border-radius:50%;border:1px solid #333;background:#0f0f0f;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;color:#888;}
+  .snav:active{background:#2a2a2a;}
+  #slide-count{font-size:11px;color:#555;}
+  #slide-canvas{width:100%;aspect-ratio:1/1;border-radius:10px;overflow:hidden;background:#000;}
+  #slide-dots{display:flex;justify-content:center;gap:5px;margin-top:10px;}
+  .sdot{width:5px;height:5px;border-radius:50%;background:#333;cursor:pointer;transition:all 0.2s;}
+  .sdot.active{background:#fff;width:14px;border-radius:3px;}
+
+  /* Download btn */
+  #dl-btn{width:100%;padding:12px;border:1px solid #2a2a2a;border-radius:12px;background:#1a1a1a;color:#888;font-size:13px;cursor:pointer;font-family:inherit;margin-bottom:16px;}
+  #dl-btn:active{background:#222;}
+
+  /* Info cards */
+  .icard{background:#1a1a1a;border:1px solid #222;border-radius:14px;padding:14px 16px;margin-bottom:10px;}
+  .ilabel{font-size:10px;letter-spacing:1.5px;color:#555;margin-bottom:6px;text-transform:uppercase;}
+  .ival{font-size:13px;color:#ccc;line-height:1.55;}
+  .ival.big{font-size:15px;font-weight:600;color:#fff;}
+  .cbtn{margin-top:10px;padding:7px 16px;border-radius:20px;border:1px solid #2a2a2a;background:#0f0f0f;color:#888;font-size:12px;cursor:pointer;font-family:inherit;}
+  .cbtn:active{background:#2a2a2a;color:#fff;}
+  .badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:11px;background:#0d2e1a;color:#22c55e;margin-bottom:10px;border:1px solid #166534;}
+
+  /* Manual input */
+  #manual-wrap{background:#1a1a1a;border:1px solid #222;border-radius:14px;padding:14px 16px;margin-bottom:10px;}
+  #csv-input{width:100%;height:100px;font-size:11px;padding:8px;border:1px solid #333;border-radius:8px;background:#0f0f0f;color:#ccc;font-family:monospace;resize:vertical;margin-top:8px;}
+  #load-csv-btn{margin-top:8px;width:100%;padding:10px;border-radius:10px;border:none;background:#fff;color:#0a0a0a;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+
+  /* Loading state */
+  #loading-state{text-align:center;padding:60px 20px;color:#555;font-size:13px;}
+  .spinner{width:28px;height:28px;border:2px solid #333;border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="header">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div id="logo"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+      <div><div id="appname">Viral Posts</div><div id="appsub">Instagram carousel viewer</div></div>
+    </div>
+    <button id="refresh-btn" onclick="loadPosts()">↻ Refresh</button>
+  </div>
+
+  <div id="status-bar">Connecting to your Google Sheet...</div>
+  <div id="post-tabs"></div>
+
+  <div id="slide-wrap">
+    <div id="slide-topbar">
+      <span id="slide-label">Slide preview</span>
+      <div id="slide-nav">
+        <button class="snav" onclick="prevSlide()">&#8592;</button>
+        <span id="slide-count">— / —</span>
+        <button class="snav" onclick="nextSlide()">&#8594;</button>
+      </div>
+    </div>
+    <div id="slide-canvas">
+      <div id="loading-state"><div class="spinner"></div>Loading your posts...</div>
+    </div>
+    <div id="slide-dots"></div>
+  </div>
+
+  <button id="dl-btn" onclick="downloadSlide()">&#8595; Download slide as PNG</button>
+  <div id="info-panel"></div>
+</div>
+
+<script>
+const SHEET_ID = "15E8efjFYWB0jKcJR7uu6TSDuja7AgUIcJYmY1caPmxs";
+const GID = "517622713";
+
+let posts = [], currentPost = 0, currentSlide = 0;
+
+function setStatus(msg){document.getElementById('status-bar').textContent = msg;}
+
+async function loadPosts(){
+  setStatus('Fetching posts...');
+  document.getElementById('slide-canvas').innerHTML='<div id="loading-state"><div class="spinner"></div>Loading...</div>';
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
+  try{
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const csv = await res.text();
+    parseCSV(csv);
+  } catch(e){
+    setStatus('Auto-load blocked. Use manual import below.');
+    showManualInput();
+  }
+}
+
+function showManualInput(){
+  document.getElementById('info-panel').innerHTML=`
+    <div id="manual-wrap">
+      <div class="ilabel">Manual import</div>
+      <div class="ival" style="font-size:12px;">In Google Sheets: File → Download → CSV. Open the file, select all, copy and paste below.</div>
+      <textarea id="csv-input" placeholder="Paste your CSV data here..."></textarea>
+      <button id="load-csv-btn" onclick="parseCSV(document.getElementById('csv-input').value)">Load My Posts</button>
+    </div>`;
+}
+
+function parseCSV(csv){
+  const lines = csv.trim().split('\n');
+  if(lines.length < 2){setStatus('No posts found.');return;}
+  posts = [];
+  for(let i=1;i<lines.length;i++){
+    const cols = splitCSV(lines[i]);
+    if(!cols||cols.length<5) continue;
+    const g=(idx)=>(cols[idx]||'').replace(/^"|"$/g,'').replace(/""/g,'"').trim();
+    posts.push({date:g(0),num:g(1),niche:g(2),style:g(3),topic:g(4),hook:g(5),slides:[g(6),g(7),g(8),g(9),g(10)].filter(s=>s),caption:g(11),hashtags:g(12),cta:g(13),status:g(14)});
+  }
+  if(!posts.length){setStatus('No posts found. Run generateDailyPosts first.');return;}
+  const today=new Date().toISOString().split('T')[0];
+  const tp=posts.filter(p=>p.date&&p.date.startsWith(today));
+  posts=tp.length>0?tp:posts.slice(-3);
+  currentPost=0;currentSlide=0;
+  setStatus(`${posts.length} posts ready — ${posts[0]?.date||'today'}`);
+  renderTabs();renderSlide();renderDots();updateCount();renderInfo();
+}
+
+function splitCSV(line){
+  const r=[];let c='';let q=false;
+  for(let i=0;i<line.length;i++){
+    const ch=line[i];
+    if(ch==='"'){if(q&&line[i+1]==='"'){c+='"';i++;}else q=!q;}
+    else if(ch===','&&!q){r.push(c);c='';}
+    else c+=ch;
+  }
+  r.push(c);return r;
+}
+
+function renderTabs(){
+  const t=document.getElementById('post-tabs');t.innerHTML='';
+  posts.forEach((p,i)=>{
+    const b=document.createElement('button');
+    b.className='ptab'+(i===currentPost?' active':'');
+    b.textContent='Post '+(i+1)+(p.topic?' · '+p.topic.substring(0,16):'');
+    b.onclick=()=>{currentPost=i;currentSlide=0;renderTabs();renderSlide();renderDots();updateCount();renderInfo();};
+    t.appendChild(b);
+  });
+}
+
+function buildSlides(post){
+  const slides=[];
+  const hook=post.hook||'YOUR HOOK HERE';
+  const topic=(post.topic||'').toUpperCase();
+  const total=post.slides.length+2;
+
+  slides.push(`<div id="slide-render" style="width:100%;height:100%;background:#0a0a0a;display:flex;flex-direction:column;justify-content:space-between;padding:24px;font-family:Georgia,serif;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="width:20px;height:2px;background:#fff;opacity:0.5;"></div>
+      <span style="font-size:8px;letter-spacing:3px;color:#fff;opacity:0.3;font-family:sans-serif;">${topic}</span>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:12px;padding:12px 0;">
+      <div style="font-size:clamp(16px,4vw,26px);font-weight:700;color:#fff;line-height:1.15;">${hook}</div>
+      <div style="width:28px;height:2px;background:#fff;opacity:0.2;"></div>
+      <div style="font-size:10px;color:#fff;opacity:0.35;font-family:sans-serif;letter-spacing:1px;">SWIPE TO LEARN →</div>
+    </div>
+    <div><span style="font-size:8px;color:#fff;opacity:0.2;font-family:sans-serif;">01 / ${total}</span></div>
+  </div>`);
+
+  post.slides.forEach((s,i)=>{
+    const parts=s.split(':');
+    const raw=parts[0]||'';
+    const body=parts.slice(1).join(':').trim()||s;
+    const m=raw.match(/\[(\d+)\]\s*(.*)/);
+    const num=m?m[1]:String(i+1).padStart(2,'0');
+    const headline=m?m[2]:raw;
+    const bg=i%2===0?'#ffffff':'#f4f4f4';
+    slides.push(`<div id="slide-render" style="width:100%;height:100%;background:${bg};display:flex;flex-direction:column;justify-content:space-between;padding:24px;font-family:Georgia,serif;">
+      <div style="display:flex;justify-content:space-between;">
+        <span style="font-size:8px;letter-spacing:2px;color:#0a0a0a;opacity:0.25;font-family:sans-serif;">POINT</span>
+        <span style="font-size:8px;color:#0a0a0a;opacity:0.2;font-family:sans-serif;">${String(i+2).padStart(2,'0')} / ${total}</span>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:10px 0;">
+        <div style="font-size:clamp(32px,8vw,52px);font-weight:700;color:#0a0a0a;opacity:0.05;line-height:1;font-family:sans-serif;margin-bottom:-10px;">${num}</div>
+        <div style="font-size:clamp(13px,3.5vw,18px);font-weight:700;color:#0a0a0a;line-height:1.2;">${headline}</div>
+        <div style="width:22px;height:2px;background:#0a0a0a;opacity:0.12;"></div>
+        <div style="font-size:11px;color:#0a0a0a;opacity:0.5;font-family:sans-serif;line-height:1.55;">${body}</div>
+      </div>
+      <div style="width:100%;height:1px;background:#0a0a0a;opacity:0.05;"></div>
+    </div>`);
+  });
+
+  slides.push(`<div id="slide-render" style="width:100%;height:100%;background:#0a0a0a;display:flex;flex-direction:column;justify-content:space-between;padding:24px;font-family:Georgia,serif;">
+    <div style="display:flex;justify-content:space-between;">
+      <div style="width:20px;height:2px;background:#fff;opacity:0.4;"></div>
+      <span style="font-size:8px;letter-spacing:2px;color:#fff;opacity:0.25;font-family:sans-serif;">FOLLOW FOR MORE</span>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:12px;padding:12px 0;">
+      <div style="font-size:clamp(13px,3.5vw,18px);font-weight:700;color:#fff;line-height:1.25;">${post.cta||'Follow for daily content'}</div>
+      <div style="width:24px;height:2px;background:#fff;opacity:0.15;"></div>
+      <div style="font-size:10px;color:#fff;opacity:0.3;font-family:sans-serif;">${(post.hashtags||'').split(' ').slice(0,4).join(' ')}</div>
+    </div>
+    <div style="border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:7px 14px;display:inline-block;">
+      <span style="font-size:10px;letter-spacing:2px;color:#fff;font-family:sans-serif;opacity:0.7;">@yourhandle</span>
+    </div>
+  </div>`);
+
+  return slides;
+}
+
+function renderSlide(){
+  if(!posts.length)return;
+  document.getElementById('slide-canvas').innerHTML=buildSlides(posts[currentPost])[currentSlide]||'';
+}
+
+function renderDots(){
+  if(!posts.length)return;
+  const total=posts[currentPost].slides.length+2;
+  const dots=document.getElementById('slide-dots');dots.innerHTML='';
+  for(let i=0;i<total;i++){
+    const d=document.createElement('div');
+    d.className='sdot'+(i===currentSlide?' active':'');
+    d.onclick=()=>{currentSlide=i;renderSlide();renderDots();updateCount();};
+    dots.appendChild(d);
+  }
+}
+
+function updateCount(){
+  if(!posts.length)return;
+  document.getElementById('slide-count').textContent=(currentSlide+1)+' / '+(posts[currentPost].slides.length+2);
+}
+
+function prevSlide(){if(!posts.length)return;const t=posts[currentPost].slides.length+2;currentSlide=(currentSlide-1+t)%t;renderSlide();renderDots();updateCount();}
+function nextSlide(){if(!posts.length)return;const t=posts[currentPost].slides.length+2;currentSlide=(currentSlide+1)%t;renderSlide();renderDots();updateCount();}
+
+function renderInfo(){
+  if(!posts.length)return;
+  const p=posts[currentPost];
+  document.getElementById('info-panel').innerHTML=`
+    <div class="icard"><div class="badge">✓ Ready to post</div><div class="ilabel">Niche</div><div class="ival">${p.niche||'—'}</div></div>
+    <div class="icard"><div class="ilabel">Hook</div><div class="ival big">${p.hook||'—'}</div></div>
+    <div class="icard"><div class="ilabel">Caption</div><div class="ival">${p.caption||'—'}</div><button class="cbtn" onclick="cp(this,'${encodeURIComponent(p.caption)}')">Copy caption</button></div>
+    <div class="icard"><div class="ilabel">Hashtags</div><div class="ival" style="color:#666;">${p.hashtags||'—'}</div><button class="cbtn" onclick="cp(this,'${encodeURIComponent(p.hashtags)}')">Copy hashtags</button></div>
+    <div class="icard"><div class="ilabel">CTA</div><div class="ival">${p.cta||'—'}</div></div>`;
+}
+
+function cp(btn,encoded){
+  navigator.clipboard.writeText(decodeURIComponent(encoded)).then(()=>{
+    const orig=btn.textContent;btn.textContent='Copied!';
+    setTimeout(()=>btn.textContent=orig,1500);
+  });
+}
+
+function downloadSlide(){
+  const el=document.getElementById('slide-render');
+  if(!el){alert('No slide to download.');return;}
+  html2canvas(el,{scale:3,backgroundColor:null}).then(c=>{
+    const a=document.createElement('a');
+    a.download=`post-${currentPost+1}-slide-${currentSlide+1}.png`;
+    a.href=c.toDataURL();a.click();
+  });
+}
+
+// Swipe support for mobile
+let touchStartX=0;
+document.getElementById('slide-canvas') && document.addEventListener('touchstart',e=>touchStartX=e.touches[0].clientX);
+document.addEventListener('touchend',e=>{
+  const diff=touchStartX-e.changedTouches[0].clientX;
+  if(Math.abs(diff)>50){diff>0?nextSlide():prevSlide();}
+});
+
+loadPosts();
+</script>
+</body>
+</html>
