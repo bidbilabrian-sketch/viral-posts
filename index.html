@@ -2,225 +2,348 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="Zenvault"/>
 <meta name="theme-color" content="#0a0a0a"/>
 <title>Zenvault — Post Studio</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#fff;min-height:100vh;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#fff;min-height:100vh;overscroll-behavior:none;}
 
 /* ── HEADER ── */
-#header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #1a1a1a;}
-#logo{width:34px;height:34px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;}
-#logo svg{fill:#0a0a0a;width:15px;height:15px;}
-#appname{font-size:15px;font-weight:700;color:#fff;}
-#appsub{font-size:10px;color:#444;}
-#import-btn{padding:7px 14px;border-radius:20px;border:1px solid #333;background:transparent;color:#888;font-size:12px;cursor:pointer;font-family:inherit;}
+#header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#0a0a0a;border-bottom:1px solid #1a1a1a;position:sticky;top:0;z-index:50;}
+.logo-wrap{display:flex;align-items:center;gap:10px;}
+#logo{width:32px;height:32px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+#logo svg{fill:#0a0a0a;width:14px;height:14px;}
+#appname{font-size:14px;font-weight:700;color:#fff;line-height:1.1;}
+#appsub{font-size:10px;color:#444;margin-top:1px;}
+#today-date{font-size:10px;color:#22c55e;font-weight:600;margin-top:1px;}
+.header-actions{display:flex;gap:8px;align-items:center;}
+#import-btn{padding:7px 13px;border-radius:20px;border:1px solid #333;background:transparent;color:#888;font-size:11px;cursor:pointer;font-family:inherit;transition:all 0.15s;}
+#import-btn:active{background:#1a1a1a;color:#fff;}
+#clear-btn{padding:7px 10px;border-radius:20px;border:1px solid #2d1111;background:transparent;color:#555;font-size:11px;cursor:pointer;font-family:inherit;}
+#clear-btn:active{background:#2d1111;color:#f87171;}
+
+/* ── SCHEDULE BANNER ── */
+#schedule-banner{display:none;padding:10px 16px;border-bottom:1px solid #1a1a1a;overflow-x:auto;white-space:nowrap;}
+#schedule-banner::-webkit-scrollbar{display:none;}
+.sched-item{display:inline-flex;align-items:center;gap:6px;margin-right:12px;padding:5px 10px;border-radius:20px;border:1px solid #1a1a1a;background:#111;cursor:pointer;transition:all 0.15s;}
+.sched-item:active{background:#1a1a1a;}
+.sched-item.posted{opacity:0.35;}
+.sched-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.sched-time{font-size:10px;font-weight:700;color:#fff;}
+.sched-type{font-size:10px;color:#555;}
 
 /* ── TABS ── */
-#tabs{display:flex;border-bottom:1px solid #1a1a1a;overflow-x:auto;}
+#tabs{display:flex;border-bottom:1px solid #1a1a1a;overflow-x:auto;background:#0a0a0a;position:sticky;top:57px;z-index:40;}
 #tabs::-webkit-scrollbar{display:none;}
-.tab{padding:12px 18px;font-size:12px;font-weight:600;color:#444;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all 0.2s;}
+.tab{padding:11px 16px;font-size:12px;font-weight:600;color:#444;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all 0.2s;display:flex;align-items:center;gap:6px;}
 .tab.active{color:#fff;border-bottom-color:#fff;}
+.tab-badge{padding:2px 6px;border-radius:10px;font-size:9px;font-weight:700;background:#1a1a1a;color:#555;transition:all 0.2s;}
+.tab.active .tab-badge{background:#222;color:#fff;}
+.tab-badge.loaded{background:#0d2e1a;color:#22c55e;}
 
 /* ── SECTIONS ── */
-.section{display:none;padding:16px;}
+.section{display:none;padding:14px 16px 80px;}
 .section.active{display:block;}
 
-/* ── STATUS ── */
-#status{padding:10px 14px;border-radius:10px;background:#111;border:1px solid #1a1a1a;font-size:12px;color:#555;margin-bottom:14px;}
+/* ── STATUS BAR ── */
+#status{padding:9px 14px;border-radius:10px;background:#111;border:1px solid #1a1a1a;font-size:11px;color:#555;margin:12px 16px 0;display:flex;align-items:center;gap:8px;}
+#status-dot{width:6px;height:6px;border-radius:50%;background:#333;flex-shrink:0;transition:background 0.3s;}
+#status-dot.live{background:#22c55e;box-shadow:0 0 6px #22c55e;}
 
-/* ── IMPORT SCREEN ── */
-#import-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:20px;text-align:center;}
-#import-screen h2{font-size:20px;font-weight:700;color:#fff;}
-#import-screen p{font-size:13px;color:#555;line-height:1.6;max-width:280px;}
-#csv-input{width:100%;height:100px;font-size:11px;padding:10px;border:1px solid #222;border-radius:10px;background:#111;color:#aaa;font-family:monospace;resize:vertical;}
-#load-btn{width:100%;padding:14px;border-radius:12px;border:none;background:#fff;color:#0a0a0a;font-size:14px;font-weight:700;cursor:pointer;}
+/* ── IMPORT OVERLAY ── */
+#import-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#0a0a0a;z-index:200;overflow-y:auto;}
+.import-header{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid #1a1a1a;position:sticky;top:0;background:#0a0a0a;z-index:1;}
+.import-title{font-size:16px;font-weight:700;}
+.import-close{padding:6px 14px;border-radius:20px;border:1px solid #333;background:transparent;color:#888;font-size:12px;cursor:pointer;font-family:inherit;}
+.import-body{padding:16px;}
+.import-steps{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
+.import-step{display:flex;align-items:flex-start;gap:10px;background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:11px 13px;}
+.step-num{width:22px;height:22px;border-radius:50%;background:#fff;color:#0a0a0a;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.step-text{font-size:12px;color:#888;line-height:1.5;}
+.csv-block{margin-bottom:14px;}
+.csv-label{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.csv-label-text{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;}
+.csv-check{font-size:10px;color:#22c55e;display:none;}
+.csv-check.show{display:block;}
+.csv-ta{width:100%;height:75px;font-size:11px;padding:9px;border:1px solid #222;border-radius:8px;background:#111;color:#aaa;font-family:monospace;resize:none;transition:border-color 0.2s;}
+.csv-ta:focus{outline:none;border-color:#333;}
+.csv-ta.has-data{border-color:#22c55e22;}
+#load-btn{width:100%;padding:15px;border-radius:14px;border:none;background:#fff;color:#0a0a0a;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px;transition:opacity 0.15s;}
 #load-btn:active{opacity:0.85;}
-.import-step{display:flex;align-items:center;gap:10px;background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:12px 14px;width:100%;max-width:320px;text-align:left;}
-.step-num{width:24px;height:24px;border-radius:50%;background:#fff;color:#0a0a0a;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.step-text{font-size:12px;color:#888;line-height:1.4;}
 
-/* ── POST CARDS ── */
-.post-card{background:#111;border:1px solid #1a1a1a;border-radius:14px;padding:14px;margin-bottom:12px;}
-.post-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-.post-badge{padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:0.5px;}
-.badge-carousel{background:#0d2e1a;color:#22c55e;border:1px solid #14532d;}
-.badge-quote{background:#1a1a2e;color:#818cf8;border:1px solid #3730a3;}
-.badge-text{background:#2d1a0d;color:#fb923c;border:1px solid #7c2d12;}
-.badge-brief{background:#0d1a2e;color:#38bdf8;border:1px solid #0369a1;}
-.post-time{font-size:10px;color:#444;}
-.post-hook{font-size:15px;font-weight:700;color:#fff;line-height:1.3;margin-bottom:8px;}
-.post-niche{font-size:11px;color:#555;margin-bottom:10px;}
-.action-row{display:flex;gap:6px;flex-wrap:wrap;}
-.action-btn{padding:6px 12px;border-radius:20px;border:1px solid #222;background:#0a0a0a;color:#888;font-size:11px;cursor:pointer;font-family:inherit;transition:all 0.15s;}
-.action-btn:active{background:#1a1a1a;color:#fff;}
-.action-btn.primary{background:#fff;color:#0a0a0a;border-color:#fff;font-weight:600;}
-
-/* ── CAROUSEL VIEWER ── */
-#carousel-section{background:#111;border-radius:16px;padding:12px;margin-bottom:14px;}
-#carousel-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-#carousel-label{font-size:11px;color:#444;}
-#carousel-nav{display:flex;align-items:center;gap:8px;}
-.cnav{width:28px;height:28px;border-radius:50%;border:1px solid #222;background:#0a0a0a;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;color:#888;}
-#carousel-count{font-size:11px;color:#444;min-width:40px;text-align:center;}
-#carousel-canvas{width:100%;aspect-ratio:4/5;border-radius:12px;overflow:hidden;background:#000;}
-#carousel-dots{display:flex;justify-content:center;gap:4px;margin-top:10px;}
-.cdot{width:5px;height:5px;border-radius:50%;background:#222;cursor:pointer;transition:all 0.2s;}
-.cdot.active{background:#fff;width:14px;border-radius:3px;}
-#carousel-post-tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;}
+/* ── CAROUSEL ── */
+#carousel-post-tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px;}
 #carousel-post-tabs::-webkit-scrollbar{display:none;}
-.cptab{padding:6px 14px;border-radius:20px;border:1px solid #1a1a1a;background:#111;color:#555;font-size:11px;cursor:pointer;white-space:nowrap;font-family:inherit;}
+.cptab{padding:6px 14px;border-radius:20px;border:1px solid #1a1a1a;background:#111;color:#555;font-size:11px;cursor:pointer;white-space:nowrap;font-family:inherit;transition:all 0.15s;}
 .cptab.active{background:#fff;color:#0a0a0a;font-weight:700;border-color:#fff;}
-#dl-btn{width:100%;padding:12px;border-radius:10px;border:none;background:#fff;color:#0a0a0a;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;}
-#dl-all-btn{width:100%;padding:10px;border-radius:10px;border:1px solid #222;background:#111;color:#666;font-size:12px;cursor:pointer;margin-top:6px;}
+#carousel-viewer{background:#111;border-radius:16px;padding:12px;margin-bottom:12px;}
+#carousel-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+#carousel-label{font-size:10px;color:#444;}
+#carousel-nav{display:flex;align-items:center;gap:8px;}
+.cnav{width:30px;height:30px;border-radius:50%;border:1px solid #222;background:#0a0a0a;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;color:#888;transition:all 0.15s;}
+.cnav:active{background:#1a1a1a;color:#fff;}
+#carousel-count{font-size:11px;color:#555;min-width:36px;text-align:center;}
+#carousel-canvas{width:100%;aspect-ratio:4/5;border-radius:10px;overflow:hidden;background:#000;position:relative;}
+#carousel-dots{display:flex;justify-content:center;gap:4px;margin-top:10px;flex-wrap:wrap;}
+.cdot{width:5px;height:5px;border-radius:50%;background:#222;cursor:pointer;transition:all 0.25s;}
+.cdot.active{background:#fff;width:16px;border-radius:3px;}
+.dl-row{display:flex;gap:6px;margin-top:10px;}
+#dl-btn{flex:1;padding:11px;border-radius:10px;border:none;background:#fff;color:#0a0a0a;font-size:12px;font-weight:700;cursor:pointer;transition:opacity 0.15s;}
+#dl-btn:active{opacity:0.8;}
+#dl-all-btn{flex:1;padding:11px;border-radius:10px;border:1px solid #222;background:#111;color:#666;font-size:12px;cursor:pointer;transition:all 0.15s;}
+#dl-all-btn:active{background:#1a1a1a;color:#fff;}
 
-/* ── QUOTE DESIGNER ── */
-.quote-preview{width:100%;aspect-ratio:1/1;border-radius:12px;overflow:hidden;margin-bottom:10px;}
+/* ── INFO CARDS ── */
+.info-card{background:#111;border:1px solid #1a1a1a;border-radius:14px;padding:14px;margin-bottom:10px;}
+.ilabel{font-size:9px;letter-spacing:1.5px;color:#333;margin-bottom:5px;text-transform:uppercase;font-weight:700;}
+.ival{font-size:13px;color:#aaa;line-height:1.6;}
+.char-count{font-size:10px;color:#555;margin-top:4px;}
+.char-count.warn{color:#f59e0b;}
+.char-count.over{color:#ef4444;}
+.copy-btn{display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:7px 14px;border-radius:20px;border:1px solid #1a1a1a;background:#0a0a0a;color:#666;font-size:11px;cursor:pointer;font-family:inherit;transition:all 0.15s;}
+.copy-btn:active{background:#1a1a1a;color:#fff;}
+.copy-btn.green{border-color:#14532d;color:#22c55e;}
+.mark-btn{display:inline-flex;align-items:center;gap:5px;margin-top:8px;margin-left:6px;padding:7px 14px;border-radius:20px;border:1px solid #1a1a2e;background:#0a0a0a;color:#555;font-size:11px;cursor:pointer;font-family:inherit;transition:all 0.15s;}
+.mark-btn:active{background:#0d2e1a;color:#22c55e;}
+.mark-btn.done{border-color:#14532d;color:#22c55e;background:#0d2e1a;}
+
+/* ── QUOTES ── */
 .quote-card{background:#111;border:1px solid #1a1a1a;border-radius:14px;padding:14px;margin-bottom:12px;}
+.quote-preview{width:100%;aspect-ratio:1/1;border-radius:10px;overflow:hidden;margin-bottom:12px;position:relative;}
+.quote-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.q-btn{padding:7px 13px;border-radius:20px;border:1px solid #222;background:#0a0a0a;color:#777;font-size:11px;cursor:pointer;font-family:inherit;transition:all 0.15s;}
+.q-btn:active{background:#1a1a1a;color:#fff;}
+.q-btn.primary{background:#fff;color:#0a0a0a;border-color:#fff;font-weight:600;}
 
-/* ── TEXT POST ── */
-.text-post-card{background:#111;border:1px solid #1a1a1a;border-radius:14px;padding:14px;margin-bottom:12px;}
-.text-hook{font-size:16px;font-weight:700;color:#fff;margin-bottom:8px;line-height:1.3;}
-.text-body{font-size:13px;color:#888;line-height:1.6;margin-bottom:10px;}
+/* ── TEXT POSTS ── */
+.text-card{background:#111;border:1px solid #1a1a1a;border-radius:14px;padding:14px;margin-bottom:12px;}
+.text-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:0.5px;background:#2d1a0d;color:#fb923c;border:1px solid #7c2d12;margin-bottom:10px;}
+.text-hook-line{font-size:15px;font-weight:700;color:#fff;line-height:1.3;margin-bottom:8px;}
+.text-body-preview{font-size:13px;color:#777;line-height:1.6;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;}
+.text-body-preview.expanded{display:block;-webkit-line-clamp:unset;}
+.read-more{font-size:11px;color:#555;cursor:pointer;margin-bottom:10px;display:inline-block;}
+.text-actions{display:flex;gap:6px;flex-wrap:wrap;}
 
 /* ── BRIEF ── */
-.brief-account{background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:12px;margin-bottom:8px;}
-.brief-username{font-size:14px;font-weight:700;color:#38bdf8;margin-bottom:4px;}
-.brief-why{font-size:11px;color:#666;margin-bottom:6px;}
-.brief-meta{display:flex;gap:10px;}
-.brief-meta span{font-size:10px;color:#444;}
+.brief-tip{background:#0d2e1a;border:1px solid #14532d;border-radius:12px;padding:13px;margin-bottom:14px;}
+.tip-lbl{font-size:9px;color:#22c55e;letter-spacing:1.5px;margin-bottom:5px;font-weight:700;}
+.tip-txt{font-size:13px;color:#fff;line-height:1.55;}
+.account-card{background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:12px;margin-bottom:8px;}
+.acc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.acc-handle{font-size:14px;font-weight:700;color:#38bdf8;}
+.acc-time{font-size:10px;color:#444;background:#0d1a2e;padding:3px 8px;border-radius:10px;}
+.acc-why{font-size:11px;color:#666;margin-bottom:6px;line-height:1.5;}
+.acc-meta{display:flex;gap:8px;}
+.acc-pill{font-size:10px;color:#444;background:#111;border:1px solid #1a1a1a;padding:3px 8px;border-radius:10px;}
 .comment-card{background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:12px;margin-bottom:8px;}
-.comment-ctx{font-size:10px;color:#444;margin-bottom:6px;letter-spacing:0.5px;text-transform:uppercase;}
-.comment-text{font-size:13px;color:#aaa;line-height:1.5;}
-.tip-card{background:#0d2e1a;border:1px solid #14532d;border-radius:12px;padding:12px;margin-bottom:16px;}
-.tip-label{font-size:10px;color:#22c55e;letter-spacing:1px;margin-bottom:6px;}
-.tip-text{font-size:13px;color:#fff;line-height:1.5;}
+.comment-ctx{font-size:9px;color:#444;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;font-weight:700;}
+.comment-txt{font-size:13px;color:#aaa;line-height:1.6;margin-bottom:8px;}
+.section-head{font-size:11px;font-weight:700;color:#fff;margin:16px 0 10px;letter-spacing:0.5px;display:flex;align-items:center;justify-content:space-between;}
+.section-count{font-size:10px;color:#444;font-weight:400;}
 
-/* ── SHARED ── */
-.section-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:10px;letter-spacing:0.5px;}
-.ilabel{font-size:10px;letter-spacing:1.5px;color:#333;margin-bottom:5px;text-transform:uppercase;}
-.ival{font-size:13px;color:#aaa;line-height:1.55;}
-.cbtn{margin-top:8px;padding:7px 16px;border-radius:20px;border:1px solid #1a1a1a;background:#0a0a0a;color:#666;font-size:12px;cursor:pointer;font-family:inherit;}
-.cbtn:active{background:#1a1a1a;color:#fff;}
-.empty{text-align:center;padding:40px 20px;color:#333;font-size:13px;}
-.spinner{width:24px;height:24px;border:2px solid #222;border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;}
+/* ── EMPTY ── */
+.empty{text-align:center;padding:48px 20px;color:#2a2a2a;}
+.empty-icon{font-size:32px;margin-bottom:10px;}
+.empty-text{font-size:13px;color:#333;line-height:1.6;}
+.empty-cta{margin-top:14px;padding:9px 20px;border-radius:20px;border:1px solid #222;background:transparent;color:#555;font-size:12px;cursor:pointer;font-family:inherit;}
+.empty-cta:active{background:#1a1a1a;}
+
+/* ── POSTED OVERLAY ── */
+.posted-overlay{position:absolute;inset:0;background:rgba(10,10,10,0.7);display:flex;align-items:center;justify-content:center;border-radius:10px;font-size:13px;font-weight:700;color:#22c55e;letter-spacing:1px;backdrop-filter:blur(2px);}
+
 @keyframes spin{to{transform:rotate(360deg);}}
+.spinner{width:20px;height:20px;border:2px solid #222;border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;}
 </style>
 </head>
 <body>
 
+<!-- HEADER -->
 <div id="header">
-  <div style="display:flex;align-items:center;gap:10px;">
+  <div class="logo-wrap">
     <div id="logo"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
-    <div><div id="appname">Zenvault</div><div id="appsub">@zenvault.co · Post Studio</div></div>
+    <div>
+      <div id="appname">Zenvault</div>
+      <div id="appsub">@zenvault.co · Post Studio</div>
+      <div id="today-date"></div>
+    </div>
   </div>
-  <button id="import-btn" onclick="showImport()">&#8593; Import CSV</button>
+  <div class="header-actions">
+    <button id="clear-btn" onclick="clearAll()" title="Reset all data">&#10005; Clear</button>
+    <button id="import-btn" onclick="showImport()">&#8593; Import</button>
+  </div>
 </div>
 
-<div id="status">Tap "Import CSV" to load today's posts from Google Sheets</div>
+<!-- STATUS -->
+<div id="status">
+  <div id="status-dot"></div>
+  <span id="status-text">Tap Import to load today's posts from Google Sheets</span>
+</div>
+
+<!-- SCHEDULE BANNER -->
+<div id="schedule-banner"></div>
 
 <!-- TABS -->
 <div id="tabs">
-  <div class="tab active" onclick="switchTab('carousels')">Carousels</div>
-  <div class="tab" onclick="switchTab('quotes')">Quotes</div>
-  <div class="tab" onclick="switchTab('textposts')">Text Posts</div>
-  <div class="tab" onclick="switchTab('brief')">Daily Brief</div>
+  <div class="tab active" onclick="switchTab('carousels',this)">
+    Carousels <span class="tab-badge" id="badge-carousels">0</span>
+  </div>
+  <div class="tab" onclick="switchTab('quotes',this)">
+    Quotes <span class="tab-badge" id="badge-quotes">0</span>
+  </div>
+  <div class="tab" onclick="switchTab('textposts',this)">
+    Text Posts <span class="tab-badge" id="badge-textposts">0</span>
+  </div>
+  <div class="tab" onclick="switchTab('brief',this)">
+    Daily Brief <span class="tab-badge" id="badge-brief">0</span>
+  </div>
 </div>
 
 <!-- IMPORT OVERLAY -->
-<div id="import-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#0a0a0a;z-index:100;overflow-y:auto;padding:20px;">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-    <div style="font-size:16px;font-weight:700;">Import Posts</div>
-    <button onclick="hideImport()" style="padding:6px 14px;border-radius:20px;border:1px solid #333;background:transparent;color:#888;font-size:12px;cursor:pointer;">Close</button>
+<div id="import-overlay">
+  <div class="import-header">
+    <div class="import-title">Import Posts</div>
+    <button class="import-close" onclick="hideImport()">Done</button>
   </div>
-  <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
-    <div class="import-step"><div class="step-num">1</div><div class="step-text">Open your Google Sheet → File → Download → CSV (.csv)</div></div>
-    <div class="import-step"><div class="step-num">2</div><div class="step-text">Open the downloaded file → Select all → Copy</div></div>
-    <div class="import-step"><div class="step-num">3</div><div class="step-text">Paste into each box below and tap Load</div></div>
-  </div>
+  <div class="import-body">
+    <div class="import-steps">
+      <div class="import-step">
+        <div class="step-num">1</div>
+        <div class="step-text">Open Google Sheets → click the tab you want (e.g. Carousels) → File → Download → CSV</div>
+      </div>
+      <div class="import-step">
+        <div class="step-num">2</div>
+        <div class="step-text">Open the downloaded file → Select all text → Copy</div>
+      </div>
+      <div class="import-step">
+        <div class="step-num">3</div>
+        <div class="step-text">Paste into the matching box below. Repeat for each tab you want to load.</div>
+      </div>
+    </div>
 
-  <div style="margin-bottom:16px;">
-    <div class="ilabel" style="color:#22c55e;">Carousels Tab CSV</div>
-    <textarea id="csv-carousels" class="csv-input" style="width:100%;height:80px;font-size:11px;padding:8px;border:1px solid #222;border-radius:8px;background:#111;color:#aaa;font-family:monospace;resize:vertical;margin-bottom:6px;" placeholder="Paste Carousels CSV here..."></textarea>
+    <div class="csv-block">
+      <div class="csv-label">
+        <span class="csv-label-text" style="color:#22c55e;">Carousels Tab</span>
+        <span class="csv-check" id="check-carousels">✓ Loaded</span>
+      </div>
+      <textarea class="csv-ta" id="csv-carousels" placeholder="Paste Carousels CSV here..." oninput="onCSVInput('carousels')"></textarea>
+    </div>
+
+    <div class="csv-block">
+      <div class="csv-label">
+        <span class="csv-label-text" style="color:#818cf8;">Quote Graphics Tab</span>
+        <span class="csv-check" id="check-quotes">✓ Loaded</span>
+      </div>
+      <textarea class="csv-ta" id="csv-quotes" placeholder="Paste Quote Graphics CSV here..." oninput="onCSVInput('quotes')"></textarea>
+    </div>
+
+    <div class="csv-block">
+      <div class="csv-label">
+        <span class="csv-label-text" style="color:#fb923c;">Text Posts Tab</span>
+        <span class="csv-check" id="check-textposts">✓ Loaded</span>
+      </div>
+      <textarea class="csv-ta" id="csv-textposts" placeholder="Paste Text Posts CSV here..." oninput="onCSVInput('textposts')"></textarea>
+    </div>
+
+    <div class="csv-block">
+      <div class="csv-label">
+        <span class="csv-label-text" style="color:#38bdf8;">Daily Brief Tab</span>
+        <span class="csv-check" id="check-brief">✓ Loaded</span>
+      </div>
+      <textarea class="csv-ta" id="csv-brief" placeholder="Paste Daily Brief CSV here..." oninput="onCSVInput('brief')"></textarea>
+    </div>
+
+    <button id="load-btn" onclick="loadAllCSV()">Load All Posts</button>
   </div>
-  <div style="margin-bottom:16px;">
-    <div class="ilabel" style="color:#818cf8;">Quote Graphics Tab CSV</div>
-    <textarea id="csv-quotes" style="width:100%;height:80px;font-size:11px;padding:8px;border:1px solid #222;border-radius:8px;background:#111;color:#aaa;font-family:monospace;resize:vertical;margin-bottom:6px;" placeholder="Paste Quote Graphics CSV here..."></textarea>
-  </div>
-  <div style="margin-bottom:16px;">
-    <div class="ilabel" style="color:#fb923c;">Text Posts Tab CSV</div>
-    <textarea id="csv-textposts" style="width:100%;height:80px;font-size:11px;padding:8px;border:1px solid #222;border-radius:8px;background:#111;color:#aaa;font-family:monospace;resize:vertical;margin-bottom:6px;" placeholder="Paste Text Posts CSV here..."></textarea>
-  </div>
-  <div style="margin-bottom:20px;">
-    <div class="ilabel" style="color:#38bdf8;">Daily Brief Tab CSV</div>
-    <textarea id="csv-brief" style="width:100%;height:80px;font-size:11px;padding:8px;border:1px solid #222;border-radius:8px;background:#111;color:#aaa;font-family:monospace;resize:vertical;margin-bottom:6px;" placeholder="Paste Daily Brief CSV here..."></textarea>
-  </div>
-  <button id="load-btn" onclick="loadAllCSV()">Load All Posts</button>
 </div>
 
 <!-- CAROUSELS SECTION -->
 <div id="section-carousels" class="section active">
   <div id="carousel-post-tabs"></div>
-  <div id="carousel-section">
+  <div id="carousel-viewer">
     <div id="carousel-topbar">
       <span id="carousel-label">4:5 portrait · Instagram optimised</span>
       <div id="carousel-nav">
         <button class="cnav" onclick="prevSlide()">&#8592;</button>
-        <span id="carousel-count">&#8212;</span>
+        <span id="carousel-count">—</span>
         <button class="cnav" onclick="nextSlide()">&#8594;</button>
       </div>
     </div>
-    <div id="carousel-canvas"><div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#222;gap:10px;aspect-ratio:4/5;"><div class="spinner"></div><span style="font-size:12px;">Import CSV to see slides</span></div></div>
+    <div id="carousel-canvas" style="display:flex;flex-direction:column;align-items:center;justify-content:center;aspect-ratio:4/5;">
+      <div class="empty-icon">🎠</div>
+      <div class="empty-text" style="font-size:12px;color:#2a2a2a;">Import Carousels CSV to preview slides</div>
+    </div>
     <div id="carousel-dots"></div>
-    <button id="dl-btn" onclick="downloadSlide()">&#8595; Download This Slide</button>
-    <button id="dl-all-btn" onclick="downloadAll()">&#8595; Download All Slides</button>
+    <div class="dl-row">
+      <button id="dl-btn" onclick="downloadSlide()">&#8595; This Slide</button>
+      <button id="dl-all-btn" onclick="downloadAll()">&#8595; All Slides</button>
+    </div>
   </div>
   <div id="carousel-info"></div>
 </div>
 
 <!-- QUOTES SECTION -->
 <div id="section-quotes" class="section">
-  <div id="quotes-list"><div class="empty">Import CSV to see quotes</div></div>
+  <div id="quotes-list">
+    <div class="empty"><div class="empty-icon">💬</div><div class="empty-text">Import Quote Graphics CSV to preview</div><button class="empty-cta" onclick="showImport()">Import CSV</button></div>
+  </div>
 </div>
 
 <!-- TEXT POSTS SECTION -->
 <div id="section-textposts" class="section">
-  <div id="textposts-list"><div class="empty">Import CSV to see text posts</div></div>
+  <div id="textposts-list">
+    <div class="empty"><div class="empty-icon">✍️</div><div class="empty-text">Import Text Posts CSV to preview</div><button class="empty-cta" onclick="showImport()">Import CSV</button></div>
+  </div>
 </div>
 
 <!-- BRIEF SECTION -->
 <div id="section-brief" class="section">
-  <div id="brief-tip"></div>
-  <div id="brief-accounts"></div>
-  <div id="brief-comments"></div>
+  <div id="brief-content">
+    <div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Import Daily Brief CSV to see target accounts and comment scripts</div><button class="empty-cta" onclick="showImport()">Import CSV</button></div>
+  </div>
 </div>
 
 <script>
-const SHEET_ID = "15E8efjFYWB0jKcJR7uu6TSDuja7AgUIcJYmY1caPmxs";
-
-// ── DATA STORE ────────────────────────────────────────────────
+// ── STATE ─────────────────────────────────────────────────────
 var data = { carousels:[], quotes:[], textposts:[], brief:[] };
 var currentCarousel = 0;
 var currentSlide    = 0;
+var postedStatus    = {};
 
-// ── TAB SWITCHING ─────────────────────────────────────────────
-function switchTab(name) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  event.target.classList.add('active');
-  document.getElementById('section-' + name).classList.add('active');
+// ── INIT ──────────────────────────────────────────────────────
+(function(){
+  var d = new Date();
+  var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('today-date').textContent =
+    days[d.getDay()] + ' · ' + d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+})();
+
+// ── TABS ─────────────────────────────────────────────────────
+function switchTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  (el||event.target.closest('.tab')).classList.add('active');
+  document.getElementById('section-'+name).classList.add('active');
 }
 
-function showImport() { document.getElementById('import-overlay').style.display='block'; }
-function hideImport() { document.getElementById('import-overlay').style.display='none'; }
+// ── IMPORT ────────────────────────────────────────────────────
+function showImport(){ document.getElementById('import-overlay').style.display='block'; }
+function hideImport(){ document.getElementById('import-overlay').style.display='none'; }
+
+function onCSVInput(type){
+  var val = document.getElementById('csv-'+type).value.trim();
+  var ta  = document.getElementById('csv-'+type);
+  if(val){ ta.classList.add('has-data'); }
+  else { ta.classList.remove('has-data'); }
+}
 
 // ── CSV PARSER ────────────────────────────────────────────────
-function splitCSV(line) {
+function splitCSV(line){
   var r=[],c='',q=false;
   for(var i=0;i<line.length;i++){
     var ch=line[i];
@@ -228,407 +351,528 @@ function splitCSV(line) {
     else if(ch===','&&!q){r.push(c);c='';}
     else c+=ch;
   }
-  r.push(c);
-  return r;
+  r.push(c); return r;
 }
-
-function cleanVal(v) {
-  return (v||'').replace(/^"|"$/g,'').replace(/""/g,'"').trim();
-}
-
-function parseCSV(csv) {
-  var lines = csv.trim().split('\n');
-  if(lines.length < 2) return [];
-  var results = [];
+function cleanVal(v){ return (v||'').replace(/^"|"$/g,'').replace(/""/g,'"').trim(); }
+function parseCSV(csv){
+  var lines=csv.trim().split('\n');
+  if(lines.length<2) return [];
+  var res=[];
   for(var i=1;i<lines.length;i++){
-    var cols = splitCSV(lines[i]);
+    var cols=splitCSV(lines[i]);
     if(!cols||cols.length<2) continue;
-    results.push(cols.map(cleanVal));
+    res.push(cols.map(cleanVal));
   }
-  return results;
+  return res;
 }
 
-// ── LOAD ALL CSV ──────────────────────────────────────────────
-function loadAllCSV() {
-  var loaded = 0;
+// ── LOAD ──────────────────────────────────────────────────────
+function loadAllCSV(){
+  var loaded=0;
 
-  // CAROUSELS
-  var csvC = document.getElementById('csv-carousels').value.trim();
-  if(csvC) {
-    var rows = parseCSV(csvC);
-    data.carousels = rows.map(r => ({
-      date:r[0]||'', num:r[1]||'', style:r[2]||'', topic:r[3]||'', hook:r[4]||'',
-      slides:[r[5],r[6],r[7],r[8],r[9]].filter(s=>s),
-      caption:r[10]||'', hashtags:r[11]||'', cta:r[12]||'', time:r[13]||'', status:r[14]||''
-    }));
+  var csvC=document.getElementById('csv-carousels').value.trim();
+  if(csvC){
+    var rows=parseCSV(csvC);
+    data.carousels=rows.map(function(r){return{
+      date:r[0]||'',num:r[1]||'',style:r[2]||'',topic:r[3]||'',hook:r[4]||'',
+      slides:[r[5],r[6],r[7],r[8],r[9]].filter(function(s){return s;}),
+      caption:r[10]||'',hashtags:r[11]||'',cta:r[12]||'',time:r[13]||'7am',status:r[14]||''
+    };});
     loaded++;
+    document.getElementById('check-carousels').classList.add('show');
   }
 
-  // QUOTES
-  var csvQ = document.getElementById('csv-quotes').value.trim();
-  if(csvQ) {
-    var rows = parseCSV(csvQ);
-    data.quotes = rows.map(r => ({
-      date:r[0]||'', quote:r[1]||'', attribution:r[2]||'', background:r[3]||'',
-      caption:r[4]||'', hashtags:r[5]||'', time:r[6]||'', status:r[7]||''
-    }));
+  var csvQ=document.getElementById('csv-quotes').value.trim();
+  if(csvQ){
+    var rows=parseCSV(csvQ);
+    data.quotes=rows.map(function(r){return{
+      date:r[0]||'',quote:r[1]||'',attribution:r[2]||'',background:r[3]||'',
+      caption:r[4]||'',hashtags:r[5]||'',time:r[6]||'10am',status:r[7]||''
+    };});
     loaded++;
+    document.getElementById('check-quotes').classList.add('show');
   }
 
-  // TEXT POSTS
-  var csvT = document.getElementById('csv-textposts').value.trim();
-  if(csvT) {
-    var rows = parseCSV(csvT);
-    data.textposts = rows.map(r => ({
-      date:r[0]||'', hook:r[1]||'', post:r[2]||'',
-      hashtags:r[3]||'', time:r[4]||'', status:r[5]||''
-    }));
+  var csvT=document.getElementById('csv-textposts').value.trim();
+  if(csvT){
+    var rows=parseCSV(csvT);
+    data.textposts=rows.map(function(r){return{
+      date:r[0]||'',hook:r[1]||'',post:r[2]||'',
+      hashtags:r[3]||'',time:r[4]||'12pm',status:r[5]||''
+    };});
     loaded++;
+    document.getElementById('check-textposts').classList.add('show');
   }
 
-  // BRIEF
-  var csvB = document.getElementById('csv-brief').value.trim();
-  if(csvB) {
-    var rows = parseCSV(csvB);
-    data.brief = rows.map(r => ({
-      date:r[0]||'', account:r[1]||'', niche:r[2]||'', followers:r[3]||'',
-      why:r[4]||'', best_time:r[5]||'', ctx:r[6]||'', comment:r[7]||'', tip:r[8]||''
-    }));
+  var csvB=document.getElementById('csv-brief').value.trim();
+  if(csvB){
+    var rows=parseCSV(csvB);
+    data.brief=rows.map(function(r){return{
+      date:r[0]||'',account:r[1]||'',niche:r[2]||'',followers:r[3]||'',
+      why:r[4]||'',best_time:r[5]||'',ctx:r[6]||'',comment:r[7]||'',tip:r[8]||''
+    };});
     loaded++;
+    document.getElementById('check-brief').classList.add('show');
   }
 
-  if(loaded === 0) { alert('Please paste at least one CSV before loading.'); return; }
+  if(loaded===0){alert('Paste at least one CSV before loading.');return;}
 
-  setStatus(loaded + ' sheet(s) loaded — ' + (data.carousels.length + data.quotes.length + data.textposts.length) + ' posts ready · @zenvault.co');
-  hideImport();
+  var total=data.carousels.length+data.quotes.length+data.textposts.length;
+  updateStatus(total+' posts loaded · @zenvault.co · tap each tab to review', true);
+  updateBadges();
+  renderSchedule();
   renderAll();
+  hideImport();
 }
 
-function setStatus(msg) { document.getElementById('status').textContent = msg; }
+function clearAll(){
+  if(!confirm('Clear all loaded posts?')) return;
+  data={carousels:[],quotes:[],textposts:[],brief:[]};
+  postedStatus={};
+  ['carousels','quotes','textposts','brief'].forEach(function(k){
+    document.getElementById('csv-'+k).value='';
+    document.getElementById('csv-'+k).classList.remove('has-data');
+    document.getElementById('check-'+k).classList.remove('show');
+  });
+  updateBadges();
+  renderSchedule();
+  renderAll();
+  updateStatus('Tap Import to load today\'s posts', false);
+}
+
+function updateStatus(msg, live){
+  document.getElementById('status-text').textContent=msg;
+  var dot=document.getElementById('status-dot');
+  if(live) dot.classList.add('live'); else dot.classList.remove('live');
+}
+
+function updateBadges(){
+  var map={carousels:data.carousels,quotes:data.quotes,textposts:data.textposts,brief:data.brief};
+  Object.keys(map).forEach(function(k){
+    var b=document.getElementById('badge-'+k);
+    var n=map[k].length;
+    b.textContent=n;
+    if(n>0) b.classList.add('loaded'); else b.classList.remove('loaded');
+  });
+}
+
+// ── SCHEDULE BANNER ───────────────────────────────────────────
+function renderSchedule(){
+  var banner=document.getElementById('schedule-banner');
+  var items=[];
+
+  data.carousels.forEach(function(c,i){
+    items.push({time:c.time||'7am',type:'Carousel',color:'#22c55e',key:'c'+i});
+  });
+  data.quotes.forEach(function(q,i){
+    items.push({time:q.time||'10am',type:'Quote',color:'#818cf8',key:'q'+i});
+  });
+  data.textposts.forEach(function(t,i){
+    items.push({time:t.time||'12pm',type:'Text Post',color:'#fb923c',key:'t'+i});
+  });
+
+  if(!items.length){banner.style.display='none';return;}
+
+  items.sort(function(a,b){
+    var toMin=function(t){
+      var m=t.match(/(\d+)(?::(\d+))?\s*(am|pm)/i);
+      if(!m)return 0;
+      var h=parseInt(m[1]),min=parseInt(m[2]||0),ap=m[3].toLowerCase();
+      if(ap==='pm'&&h!==12)h+=12;
+      if(ap==='am'&&h===12)h=0;
+      return h*60+min;
+    };
+    return toMin(a.time)-toMin(b.time);
+  });
+
+  banner.innerHTML=items.map(function(it){
+    var done=postedStatus[it.key]?'posted':'';
+    return '<div class="sched-item '+done+'" onclick="markPosted(\''+it.key+'\',this)">' +
+      '<div class="sched-dot" style="background:'+it.color+'"></div>' +
+      '<span class="sched-time">'+it.time+'</span>' +
+      '<span class="sched-type">'+it.type+'</span>' +
+    '</div>';
+  }).join('');
+  banner.style.display='block';
+}
+
+function markPosted(key,el){
+  postedStatus[key]=!postedStatus[key];
+  el.classList.toggle('posted');
+}
 
 // ── RENDER ALL ────────────────────────────────────────────────
-function renderAll() {
+function renderAll(){
   renderCarouselTabs();
   renderQuotes();
   renderTextPosts();
   renderBrief();
 }
 
-// ── CAROUSELS ─────────────────────────────────────────────────
-function renderCarouselTabs() {
-  var tabs = document.getElementById('carousel-post-tabs');
-  tabs.innerHTML = '';
-  if(!data.carousels.length) return;
+// ── CAROUSELS ────────────────────────────────────────────────
+function renderCarouselTabs(){
+  var tabs=document.getElementById('carousel-post-tabs');
+  tabs.innerHTML='';
+  if(!data.carousels.length){
+    document.getElementById('carousel-canvas').innerHTML=
+      '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;aspect-ratio:4/5;">' +
+      '<div class="empty-icon">🎠</div>' +
+      '<div style="font-size:12px;color:#2a2a2a;">Import Carousels CSV</div></div>';
+    document.getElementById('carousel-info').innerHTML='';
+    return;
+  }
   data.carousels.forEach(function(c,i){
-    var btn = document.createElement('button');
-    btn.className = 'cptab' + (i===currentCarousel?' active':'');
-    btn.textContent = 'Post ' + (i+1) + (c.topic?' · '+c.topic.substring(0,14):'');
-    btn.onclick = function(){ currentCarousel=i; currentSlide=0; renderCarouselTabs(); renderSlide(); renderDots(); updateCount(); renderCarouselInfo(); };
+    var btn=document.createElement('button');
+    btn.className='cptab'+(i===currentCarousel?' active':'');
+    btn.textContent='Post '+(i+1)+(c.time?' · '+c.time:'')+(c.topic?' · '+c.topic.substring(0,12):'');
+    (function(idx){btn.onclick=function(){
+      currentCarousel=idx;currentSlide=0;
+      renderCarouselTabs();renderSlide();renderDots();updateCount();renderCarouselInfo();
+    };})(i);
     tabs.appendChild(btn);
   });
-  renderSlide();
-  renderDots();
-  updateCount();
-  renderCarouselInfo();
+  renderSlide();renderDots();updateCount();renderCarouselInfo();
 }
 
-function buildSlides(post) {
-  var slides = [];
-  var hook  = post.hook || 'YOUR HOOK HERE';
-  var topic = (post.topic||'AI TOOLS').toUpperCase();
-  var total = post.slides.length + 2;
+function buildSlides(post){
+  var slides=[];
+  var hook=post.hook||'YOUR HOOK HERE';
+  var topic=(post.topic||'AI TOOLS').toUpperCase();
+  var total=post.slides.length+3;
 
-  // Hook slide
-  slides.push('<div id="sr" style="width:100%;height:100%;background:#0a0a0a;display:flex;flex-direction:column;padding:clamp(24px,5%,36px);font-family:Georgia,serif;position:relative;overflow:hidden;">' +
+  slides.push('<div id="sr" style="width:100%;height:100%;background:#0a0a0a;display:flex;flex-direction:column;padding:clamp(20px,5%,32px);font-family:Georgia,serif;position:relative;">' +
     '<div style="display:flex;justify-content:space-between;align-items:center;">' +
-      '<div style="width:24px;height:2px;background:#fff;opacity:0.5;"></div>' +
-      '<span style="font-size:9px;letter-spacing:4px;color:#fff;opacity:0.3;font-family:sans-serif;">' + topic + '</span>' +
+      '<div style="width:22px;height:2px;background:#fff;opacity:0.4;"></div>' +
+      '<span style="font-size:8px;letter-spacing:4px;color:#fff;opacity:0.25;font-family:sans-serif;">'+topic+'</span>' +
+      '<span style="font-size:8px;color:#fff;opacity:0.2;font-family:sans-serif;">@zenvault.co</span>' +
     '</div>' +
-    '<div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:clamp(14px,3%,22px);">' +
-      '<div style="font-size:clamp(22px,5.5vw,40px);font-weight:900;color:#fff;line-height:1.05;letter-spacing:-0.5px;">' + hook + '</div>' +
-      '<div style="width:44px;height:3px;background:#fff;opacity:0.25;"></div>' +
-      '<div style="font-size:11px;color:#fff;opacity:0.35;font-family:sans-serif;letter-spacing:3px;">SWIPE TO LEARN &#8594;</div>' +
+    '<div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:clamp(12px,2.5%,20px);">' +
+      '<div style="font-size:clamp(20px,5.5vw,38px);font-weight:900;color:#fff;line-height:1.05;letter-spacing:-0.5px;">'+hook+'</div>' +
+      '<div style="width:40px;height:3px;background:#fff;opacity:0.2;"></div>' +
+      '<div style="font-size:10px;color:#fff;opacity:0.3;font-family:sans-serif;letter-spacing:3px;">SWIPE TO LEARN &#8594;</div>' +
     '</div>' +
-    '<div style="display:flex;justify-content:space-between;padding-top:14px;">' +
-      '<div style="padding:6px 12px;border:1px solid rgba(255,255,255,0.15);border-radius:4px;"><span style="font-size:9px;letter-spacing:2px;color:#fff;opacity:0.5;font-family:sans-serif;">1 / ' + total + '</span></div>' +
-      '<span style="font-size:9px;color:#fff;opacity:0.2;font-family:sans-serif;">@zenvault.co</span>' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;">' +
+      '<div style="padding:5px 11px;border:1px solid rgba(255,255,255,0.12);border-radius:4px;">' +
+        '<span style="font-size:8px;letter-spacing:2px;color:#fff;opacity:0.4;font-family:sans-serif;">1 / '+total+'</span>' +
+      '</div>' +
     '</div>' +
   '</div>');
 
-  // Point slides
   post.slides.forEach(function(s,i){
-    var parts = s.split(':');
-    var raw   = parts[0]||'';
-    var body  = parts.slice(1).join(':').trim()||s;
-    var m     = raw.match(/\[(\d+)\]\s*(.*)/);
-    var num   = m ? m[1] : String(i+1).padStart(2,'0');
-    var head  = (m ? m[2] : raw).toUpperCase();
-    var bg    = i%2===0 ? '#ffffff' : '#f0f0f0';
-    slides.push('<div id="sr" style="width:100%;height:100%;background:' + bg + ';display:flex;flex-direction:column;padding:clamp(24px,5%,36px);font-family:Georgia,serif;position:relative;overflow:hidden;">' +
-      '<div style="position:absolute;bottom:-10px;right:-10px;font-size:clamp(120px,28vw,180px);font-weight:900;color:#0a0a0a;opacity:0.04;line-height:1;font-family:sans-serif;">' + num + '</div>' +
+    var parts=s.split(':');
+    var raw=parts[0]||'';
+    var body=parts.slice(1).join(':').trim()||s;
+    var m=raw.match(/\[(\d+)\]\s*(.*)/);
+    var num=m?m[1]:String(i+1).padStart(2,'0');
+    var head=(m?m[2]:raw).toUpperCase();
+    var bg=i%2===0?'#ffffff':'#f0f0f0';
+    slides.push('<div id="sr" style="width:100%;height:100%;background:'+bg+';display:flex;flex-direction:column;padding:clamp(20px,5%,32px);font-family:Georgia,serif;position:relative;overflow:hidden;">' +
+      '<div style="position:absolute;bottom:-8px;right:-8px;font-size:clamp(110px,26vw,160px);font-weight:900;color:#0a0a0a;opacity:0.04;line-height:1;font-family:sans-serif;">'+num+'</div>' +
       '<div style="display:flex;justify-content:space-between;">' +
-        '<span style="font-size:9px;letter-spacing:3px;color:#0a0a0a;opacity:0.2;font-family:sans-serif;">POINT</span>' +
-        '<span style="font-size:9px;color:#0a0a0a;opacity:0.15;font-family:sans-serif;">' + (i+2) + ' / ' + total + '</span>' +
+        '<span style="font-size:8px;letter-spacing:3px;color:#0a0a0a;opacity:0.18;font-family:sans-serif;">POINT</span>' +
+        '<span style="font-size:8px;color:#0a0a0a;opacity:0.12;font-family:sans-serif;">'+(i+2)+' / '+total+'</span>' +
       '</div>' +
-      '<div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:clamp(12px,2.5%,18px);position:relative;z-index:1;">' +
-        '<div style="display:flex;align-items:center;gap:10px;">' +
-          '<div style="width:30px;height:30px;border-radius:50%;background:#0a0a0a;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-size:11px;font-weight:700;color:#fff;font-family:sans-serif;">' + num + '</span></div>' +
+      '<div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:clamp(10px,2%,16px);position:relative;z-index:1;">' +
+        '<div style="width:28px;height:28px;border-radius:50%;background:#0a0a0a;display:flex;align-items:center;justify-content:center;">' +
+          '<span style="font-size:10px;font-weight:700;color:#fff;font-family:sans-serif;">'+num+'</span>' +
         '</div>' +
-        '<div style="font-size:clamp(18px,4.5vw,30px);font-weight:900;color:#0a0a0a;line-height:1.1;letter-spacing:-0.3px;">' + head + '</div>' +
-        '<div style="width:36px;height:3px;background:#0a0a0a;opacity:0.12;"></div>' +
-        '<div style="font-size:clamp(12px,2.8vw,16px);color:#333;font-family:sans-serif;line-height:1.65;">' + body + '</div>' +
+        '<div style="font-size:clamp(17px,4.5vw,28px);font-weight:900;color:#0a0a0a;line-height:1.1;letter-spacing:-0.3px;">'+head+'</div>' +
+        '<div style="width:32px;height:2px;background:#0a0a0a;opacity:0.1;"></div>' +
+        '<div style="font-size:clamp(11px,2.8vw,15px);color:#333;font-family:sans-serif;line-height:1.7;">'+body+'</div>' +
       '</div>' +
-      '<div style="display:flex;justify-content:flex-end;padding-top:12px;">' +
-        '<span style="font-size:9px;color:#0a0a0a;opacity:0.15;font-family:sans-serif;">@zenvault.co</span>' +
+      '<div style="display:flex;justify-content:flex-end;padding-top:10px;">' +
+        '<span style="font-size:8px;color:#0a0a0a;opacity:0.12;font-family:sans-serif;">@zenvault.co</span>' +
       '</div>' +
     '</div>');
   });
 
-  // Save reminder
-  slides.push('<div id="sr" style="width:100%;height:100%;background:#f8f8f8;display:flex;flex-direction:column;padding:clamp(24px,5%,36px);font-family:Georgia,serif;outline:3px solid #0a0a0a;outline-offset:-3px;">' +
-    '<div style="display:flex;justify-content:space-between;"><span style="font-size:9px;letter-spacing:4px;color:#0a0a0a;opacity:0.25;font-family:sans-serif;">SAVE THIS</span></div>' +
-    '<div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:clamp(14px,3%,20px);">' +
-      '<div style="font-size:clamp(22px,5.5vw,36px);font-weight:900;color:#0a0a0a;line-height:1.1;">Save this post — you\'ll need it later.</div>' +
-      '<div style="width:44px;height:3px;background:#0a0a0a;opacity:0.12;"></div>' +
-      '<div style="font-size:clamp(12px,2.8vw,15px);color:#555;font-family:sans-serif;line-height:1.65;">Most people scroll past. The ones who save it are the ones who actually change. Don\'t be like most people.</div>' +
+  slides.push('<div id="sr" style="width:100%;height:100%;background:#f8f8f8;display:flex;flex-direction:column;padding:clamp(20px,5%,32px);font-family:Georgia,serif;outline:3px solid #0a0a0a;outline-offset:-3px;">' +
+    '<div style="display:flex;justify-content:space-between;">' +
+      '<span style="font-size:8px;letter-spacing:4px;color:#0a0a0a;opacity:0.2;font-family:sans-serif;">SAVE THIS</span>' +
+      '<span style="font-size:8px;color:#0a0a0a;opacity:0.12;font-family:sans-serif;">'+(post.slides.length+2)+' / '+total+'</span>' +
     '</div>' +
-    '<div style="display:flex;justify-content:flex-end;"><span style="font-size:9px;color:#0a0a0a;opacity:0.15;font-family:sans-serif;">@zenvault.co</span></div>' +
+    '<div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:clamp(12px,2.5%,18px);">' +
+      '<div style="font-size:clamp(20px,5vw,32px);font-weight:900;color:#0a0a0a;line-height:1.1;">Save this post — you\'ll need it later.</div>' +
+      '<div style="width:40px;height:2px;background:#0a0a0a;opacity:0.1;"></div>' +
+      '<div style="font-size:clamp(11px,2.8vw,14px);color:#555;font-family:sans-serif;line-height:1.7;">Most people scroll past. The ones who save it are the ones who actually change. Don\'t be like most people.</div>' +
+    '</div>' +
+    '<div style="display:flex;justify-content:flex-end;"><span style="font-size:8px;color:#0a0a0a;opacity:0.12;font-family:sans-serif;">@zenvault.co</span></div>' +
   '</div>');
 
-  // CTA slide
-  slides.push('<div id="sr" style="width:100%;height:100%;background:#0a0a0a;display:flex;flex-direction:column;padding:clamp(24px,5%,36px);font-family:Georgia,serif;">' +
+  slides.push('<div id="sr" style="width:100%;height:100%;background:#0a0a0a;display:flex;flex-direction:column;padding:clamp(20px,5%,32px);font-family:Georgia,serif;">' +
     '<div style="display:flex;justify-content:space-between;">' +
-      '<div style="width:24px;height:2px;background:#fff;opacity:0.4;"></div>' +
-      '<span style="font-size:9px;letter-spacing:3px;color:#fff;opacity:0.25;font-family:sans-serif;">FOLLOW FOR MORE</span>' +
+      '<div style="width:20px;height:2px;background:#fff;opacity:0.3;"></div>' +
+      '<span style="font-size:8px;letter-spacing:3px;color:#fff;opacity:0.2;font-family:sans-serif;">FOLLOW FOR MORE</span>' +
     '</div>' +
-    '<div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:clamp(14px,3%,20px);">' +
-      '<div style="font-size:clamp(20px,4.5vw,32px);font-weight:900;color:#fff;line-height:1.15;">' + (post.cta||'Follow @zenvault.co for daily AI tools that build real income.') + '</div>' +
-      '<div style="width:40px;height:3px;background:#fff;opacity:0.15;"></div>' +
-      '<div style="font-size:11px;color:#fff;opacity:0.3;font-family:sans-serif;">3 posts daily. No fluff. Just tools that work.</div>' +
+    '<div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:clamp(12px,2.5%,18px);">' +
+      '<div style="font-size:clamp(18px,4.5vw,30px);font-weight:900;color:#fff;line-height:1.15;">'+(post.cta||'Follow @zenvault.co for daily AI tools that build real income.')+'</div>' +
+      '<div style="width:36px;height:2px;background:#fff;opacity:0.12;"></div>' +
+      '<div style="font-size:10px;color:#fff;opacity:0.25;font-family:sans-serif;">3 posts daily. No fluff. Just tools that work.</div>' +
     '</div>' +
-    '<div style="border:2px solid rgba(255,255,255,0.25);border-radius:8px;padding:12px 20px;display:inline-block;width:fit-content;margin-top:16px;">' +
-      '<span style="font-size:clamp(13px,3vw,18px);letter-spacing:3px;color:#fff;font-family:sans-serif;font-weight:700;">@ZENVAULT.CO</span>' +
+    '<div style="border:1px solid rgba(255,255,255,0.18);border-radius:6px;padding:10px 18px;margin-top:14px;display:inline-block;width:fit-content;">' +
+      '<span style="font-size:clamp(12px,3vw,16px);letter-spacing:3px;color:#fff;font-family:sans-serif;font-weight:700;">@ZENVAULT.CO</span>' +
     '</div>' +
   '</div>');
 
   return slides;
 }
 
-function renderSlide() {
+function renderSlide(){
   if(!data.carousels.length) return;
-  var all = buildSlides(data.carousels[currentCarousel]);
-  document.getElementById('carousel-canvas').innerHTML = all[currentSlide]||'';
+  var all=buildSlides(data.carousels[currentCarousel]);
+  document.getElementById('carousel-canvas').innerHTML=all[currentSlide]||'';
 }
-
-function renderDots() {
+function renderDots(){
   if(!data.carousels.length) return;
-  var total = data.carousels[currentCarousel].slides.length + 3;
-  var dots  = document.getElementById('carousel-dots');
-  dots.innerHTML = '';
+  var total=data.carousels[currentCarousel].slides.length+3;
+  var dots=document.getElementById('carousel-dots');
+  dots.innerHTML='';
   for(var i=0;i<total;i++){
-    var d = document.createElement('div');
-    d.className = 'cdot' + (i===currentSlide?' active':'');
-    (function(idx){ d.onclick = function(){ currentSlide=idx; renderSlide(); renderDots(); updateCount(); }; })(i);
+    var d=document.createElement('div');
+    d.className='cdot'+(i===currentSlide?' active':'');
+    (function(idx){d.onclick=function(){currentSlide=idx;renderSlide();renderDots();updateCount();};})(i);
     dots.appendChild(d);
   }
 }
-
-function updateCount() {
+function updateCount(){
   if(!data.carousels.length) return;
-  var total = data.carousels[currentCarousel].slides.length + 3;
-  document.getElementById('carousel-count').textContent = (currentSlide+1) + ' / ' + total;
+  var total=data.carousels[currentCarousel].slides.length+3;
+  document.getElementById('carousel-count').textContent=(currentSlide+1)+' / '+total;
+}
+function prevSlide(){
+  if(!data.carousels.length) return;
+  var t=data.carousels[currentCarousel].slides.length+3;
+  currentSlide=(currentSlide-1+t)%t;
+  renderSlide();renderDots();updateCount();
+}
+function nextSlide(){
+  if(!data.carousels.length) return;
+  var t=data.carousels[currentCarousel].slides.length+3;
+  currentSlide=(currentSlide+1)%t;
+  renderSlide();renderDots();updateCount();
 }
 
-function prevSlide() {
-  if(!data.carousels.length) return;
-  var t = data.carousels[currentCarousel].slides.length + 3;
-  currentSlide = (currentSlide-1+t)%t;
-  renderSlide(); renderDots(); updateCount();
+function charCount(text, limit){
+  var n=text.length;
+  var cls=n>limit?'over':n>limit*0.9?'warn':'';
+  return '<div class="char-count '+cls+'">'+n+' / '+limit+' characters</div>';
 }
 
-function nextSlide() {
+function renderCarouselInfo(){
   if(!data.carousels.length) return;
-  var t = data.carousels[currentCarousel].slides.length + 3;
-  currentSlide = (currentSlide+1)%t;
-  renderSlide(); renderDots(); updateCount();
-}
-
-function renderCarouselInfo() {
-  if(!data.carousels.length) return;
-  var p = data.carousels[currentCarousel];
-  document.getElementById('carousel-info').innerHTML =
-    '<div style="background:#111;border:1px solid #1a1a1a;border-radius:14px;padding:14px;margin-bottom:10px;">' +
+  var p=data.carousels[currentCarousel];
+  document.getElementById('carousel-info').innerHTML=
+    '<div class="info-card">' +
       '<div class="ilabel">Hook</div>' +
-      '<div style="font-size:15px;font-weight:700;color:#fff;line-height:1.3;margin-bottom:10px;">' + (p.hook||'—') + '</div>' +
+      '<div style="font-size:15px;font-weight:700;color:#fff;line-height:1.3;margin-bottom:10px;">'+(p.hook||'—')+'</div>' +
       '<div class="ilabel">Caption</div>' +
-      '<div class="ival" style="margin-bottom:8px;">' + (p.caption||'—') + '</div>' +
-      '<button class="cbtn" onclick="cp(this,\'' + encodeURIComponent(p.caption) + '\')">Copy caption</button>' +
+      '<div class="ival" style="margin-bottom:4px;">'+(p.caption||'—')+'</div>' +
+      charCount(p.caption||'',2200) +
+      '<button class="copy-btn green" onclick="cp(this,\''+encodeURIComponent(p.caption)+'\')">&#128203; Copy caption</button>' +
+      '<button class="mark-btn" id="mark-c'+currentCarousel+'" onclick="toggleMark(this,\'c'+currentCarousel+'\')">&#10003; Mark as posted</button>' +
     '</div>' +
-    '<div style="background:#111;border:1px solid #1a1a1a;border-radius:14px;padding:14px;margin-bottom:10px;">' +
-      '<div class="ilabel">Hashtags — paste as first comment</div>' +
-      '<div class="ival" style="color:#555;">' + (p.hashtags||'—') + '</div>' +
-      '<button class="cbtn" onclick="cp(this,\'' + encodeURIComponent(p.hashtags) + '\')">Copy hashtags</button>' +
+    '<div class="info-card">' +
+      '<div class="ilabel">Hashtags — paste as first comment immediately after posting</div>' +
+      '<div class="ival" style="color:#444;font-size:11px;">'+(p.hashtags||'—')+'</div>' +
+      '<button class="copy-btn" onclick="cp(this,\''+encodeURIComponent(p.hashtags)+'\')">&#128203; Copy hashtags</button>' +
     '</div>' +
-    '<div style="background:#111;border:1px solid #1a1a1a;border-radius:14px;padding:14px;margin-bottom:10px;">' +
-      '<div class="ilabel">Post time</div>' +
-      '<div class="ival">' + (p.time||'7am') + '</div>' +
+    '<div class="info-card" style="display:flex;align-items:center;justify-content:space-between;">' +
+      '<div><div class="ilabel">Best post time</div><div style="font-size:18px;font-weight:700;color:#22c55e;">'+(p.time||'7am')+'</div></div>' +
+      '<div><div class="ilabel">Format</div><div class="ival">4:5 portrait</div></div>' +
+      '<div><div class="ilabel">Style</div><div class="ival">'+(p.style||'—')+'</div></div>' +
     '</div>';
 }
 
-async function downloadSlide() {
-  var el = document.getElementById('sr');
-  if(!el){alert('No slide loaded.');return;}
-  var c = await html2canvas(el,{scale:3,backgroundColor:null,useCORS:true});
-  var a = document.createElement('a');
-  a.download = 'zenvault-post' + (currentCarousel+1) + '-slide' + (currentSlide+1) + '.png';
-  a.href = c.toDataURL('image/png'); a.click();
+function toggleMark(btn, key){
+  postedStatus[key]=!postedStatus[key];
+  if(postedStatus[key]){
+    btn.classList.add('done');
+    btn.textContent='✓ Posted!';
+  } else {
+    btn.classList.remove('done');
+    btn.textContent='✓ Mark as posted';
+  }
+  renderSchedule();
 }
 
-async function downloadAll() {
+async function downloadSlide(){
+  var el=document.getElementById('sr');
+  if(!el){alert('No slide loaded.');return;}
+  var btn=document.getElementById('dl-btn');
+  btn.textContent='Saving...';
+  var c=await html2canvas(el,{scale:3,backgroundColor:null,useCORS:true});
+  var a=document.createElement('a');
+  a.download='zenvault-p'+(currentCarousel+1)+'-s'+(currentSlide+1)+'.png';
+  a.href=c.toDataURL('image/png');a.click();
+  btn.textContent='↓ This Slide';
+}
+
+async function downloadAll(){
   if(!data.carousels.length){alert('No carousel loaded.');return;}
-  var post  = data.carousels[currentCarousel];
-  var all   = buildSlides(post);
-  var canvas = document.getElementById('carousel-canvas');
-  var btn   = document.getElementById('dl-all-btn');
-  btn.textContent = 'Downloading...';
-  btn.disabled = true;
+  var post=data.carousels[currentCarousel];
+  var all=buildSlides(post);
+  var canvas=document.getElementById('carousel-canvas');
+  var btn=document.getElementById('dl-all-btn');
+  btn.textContent='Saving...';btn.disabled=true;
   for(var i=0;i<all.length;i++){
-    canvas.innerHTML = all[i];
-    await new Promise(r=>setTimeout(r,500));
-    var el = document.getElementById('sr');
+    canvas.innerHTML=all[i];
+    await new Promise(function(r){setTimeout(r,500);});
+    var el=document.getElementById('sr');
     if(!el) continue;
-    var c = await html2canvas(el,{scale:3,backgroundColor:null,useCORS:true});
-    var a = document.createElement('a');
-    a.download = 'zenvault-post' + (currentCarousel+1) + '-slide' + (i+1) + '.png';
-    a.href = c.toDataURL('image/png'); a.click();
-    await new Promise(r=>setTimeout(r,400));
+    var c=await html2canvas(el,{scale:3,backgroundColor:null,useCORS:true});
+    var a=document.createElement('a');
+    a.download='zenvault-p'+(currentCarousel+1)+'-s'+(i+1)+'.png';
+    a.href=c.toDataURL('image/png');a.click();
+    await new Promise(function(r){setTimeout(r,400);});
   }
-  canvas.innerHTML = all[currentSlide];
-  btn.textContent = '↓ Download All Slides';
-  btn.disabled = false;
+  canvas.innerHTML=all[currentSlide];
+  btn.textContent='↓ All Slides';btn.disabled=false;
 }
 
 // ── QUOTES ────────────────────────────────────────────────────
-function renderQuotes() {
-  var list = document.getElementById('quotes-list');
-  if(!data.quotes.length){ list.innerHTML='<div class="empty">No quotes loaded. Import Quote Graphics CSV.</div>'; return; }
-  list.innerHTML = '<div class="section-title">QUOTE GRAPHICS — ' + data.quotes.length + ' today</div>';
+function renderQuotes(){
+  var list=document.getElementById('quotes-list');
+  if(!data.quotes.length){
+    list.innerHTML='<div class="empty"><div class="empty-icon">💬</div><div class="empty-text">Import Quote Graphics CSV</div><button class="empty-cta" onclick="showImport()">Import CSV</button></div>';
+    return;
+  }
+  list.innerHTML='<div class="section-head">QUOTE GRAPHICS <span class="section-count">'+data.quotes.length+' today</span></div>';
   data.quotes.forEach(function(q,i){
-    var bg  = q.background==='white' ? '#ffffff' : '#0a0a0a';
-    var txt = q.background==='white' ? '#0a0a0a' : '#ffffff';
-    var div = document.createElement('div');
-    div.className = 'quote-card';
-    div.innerHTML =
-      '<div class="quote-preview" style="background:' + bg + ';display:flex;flex-direction:column;justify-content:center;align-items:center;padding:32px;text-align:center;position:relative;">' +
-        '<div style="font-size:clamp(18px,4.5vw,28px);font-weight:900;color:' + txt + ';line-height:1.2;font-family:Georgia,serif;">' + (q.quote||'—') + '</div>' +
-        '<div style="width:40px;height:2px;background:' + txt + ';opacity:0.2;margin:16px auto;"></div>' +
-        '<div style="font-size:12px;color:' + txt + ';opacity:0.4;font-family:sans-serif;letter-spacing:2px;">' + (q.attribution||'— Zenvault') + '</div>' +
-        '<div style="position:absolute;bottom:12px;right:16px;font-size:9px;color:' + txt + ';opacity:0.2;font-family:sans-serif;letter-spacing:1px;">@zenvault.co</div>' +
+    var bg=q.background==='white'?'#ffffff':'#0a0a0a';
+    var txt=q.background==='white'?'#0a0a0a':'#ffffff';
+    var div=document.createElement('div');
+    div.className='quote-card';
+    div.innerHTML=
+      '<div class="quote-preview" style="background:'+bg+';display:flex;flex-direction:column;justify-content:center;align-items:center;padding:28px;text-align:center;position:relative;">' +
+        '<div style="font-size:clamp(16px,4.5vw,26px);font-weight:900;color:'+txt+';line-height:1.2;font-family:Georgia,serif;">'+(q.quote||'—')+'</div>' +
+        '<div style="width:36px;height:2px;background:'+txt+';opacity:0.15;margin:14px auto;"></div>' +
+        '<div style="font-size:11px;color:'+txt+';opacity:0.35;font-family:sans-serif;letter-spacing:2px;">'+(q.attribution||'— Zenvault')+'</div>' +
+        '<div style="position:absolute;bottom:10px;right:14px;font-size:8px;color:'+txt+';opacity:0.15;font-family:sans-serif;letter-spacing:1px;">@zenvault.co</div>' +
       '</div>' +
       '<div class="ilabel" style="margin-top:10px;">Caption</div>' +
-      '<div class="ival" style="margin-bottom:8px;">' + (q.caption||'—') + '</div>' +
-      '<div class="action-row">' +
-        '<button class="action-btn" onclick="cp(this,\'' + encodeURIComponent(q.quote) + '\')">Copy quote</button>' +
-        '<button class="action-btn" onclick="cp(this,\'' + encodeURIComponent(q.caption) + '\')">Copy caption</button>' +
-        '<button class="action-btn" onclick="cp(this,\'' + encodeURIComponent(q.hashtags) + '\')">Copy hashtags</button>' +
-        '<span style="font-size:11px;color:#444;padding:6px 4px;">Post ' + (q.time||'10am') + '</span>' +
+      '<div class="ival" style="margin-bottom:4px;">'+(q.caption||'—')+'</div>' +
+      charCount(q.caption||'',2200)+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;">' +
+        '<div style="font-size:11px;color:#22c55e;font-weight:700;">Post at '+( q.time||'10am')+'</div>' +
+      '</div>' +
+      '<div class="quote-actions" style="margin-top:10px;">' +
+        '<button class="q-btn primary" onclick="cp(this,\''+encodeURIComponent(q.caption)+'\')">Copy caption</button>' +
+        '<button class="q-btn" onclick="cp(this,\''+encodeURIComponent(q.quote)+'\')">Copy quote</button>' +
+        '<button class="q-btn" onclick="cp(this,\''+encodeURIComponent(q.hashtags)+'\')">Copy hashtags</button>' +
+        '<button class="mark-btn" onclick="toggleMark(this,\'q'+i+'\')">&#10003; Mark as posted</button>' +
       '</div>';
     list.appendChild(div);
   });
 }
 
 // ── TEXT POSTS ────────────────────────────────────────────────
-function renderTextPosts() {
-  var list = document.getElementById('textposts-list');
-  if(!data.textposts.length){ list.innerHTML='<div class="empty">No text posts loaded. Import Text Posts CSV.</div>'; return; }
-  list.innerHTML = '<div class="section-title">TEXT POSTS — ' + data.textposts.length + ' today</div>';
+function renderTextPosts(){
+  var list=document.getElementById('textposts-list');
+  if(!data.textposts.length){
+    list.innerHTML='<div class="empty"><div class="empty-icon">✍️</div><div class="empty-text">Import Text Posts CSV</div><button class="empty-cta" onclick="showImport()">Import CSV</button></div>';
+    return;
+  }
+  list.innerHTML='<div class="section-head">TEXT POSTS <span class="section-count">'+data.textposts.length+' today</span></div>';
   data.textposts.forEach(function(t,i){
-    var div = document.createElement('div');
-    div.className = 'text-post-card';
-    div.innerHTML =
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">' +
-        '<span class="post-badge badge-text">TEXT POST</span>' +
-        '<span class="post-time">Post at ' + (t.time||'12pm') + '</span>' +
+    var div=document.createElement('div');
+    div.className='text-card';
+    var bodyId='tb'+i;
+    div.innerHTML=
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">' +
+        '<span class="text-badge">TEXT POST</span>' +
+        '<span style="font-size:11px;color:#22c55e;font-weight:700;">Post at '+(t.time||'12pm')+'</span>' +
       '</div>' +
-      '<div class="text-hook">' + (t.hook||'—') + '</div>' +
-      '<div class="text-body">' + (t.post||'—') + '</div>' +
-      '<div class="action-row">' +
-        '<button class="action-btn primary" onclick="cp(this,\'' + encodeURIComponent(t.post) + '\')">Copy full post</button>' +
-        '<button class="action-btn" onclick="cp(this,\'' + encodeURIComponent(t.hashtags) + '\')">Copy hashtags</button>' +
+      '<div class="text-hook-line">'+(t.hook||'—')+'</div>' +
+      '<div class="text-body-preview" id="'+bodyId+'">'+(t.post||'—')+'</div>' +
+      '<span class="read-more" onclick="expandText(\''+bodyId+'\',this)">Read more &#8595;</span>' +
+      charCount(t.post||'',2200)+
+      '<div class="text-actions" style="margin-top:10px;">' +
+        '<button class="q-btn primary" onclick="cp(this,\''+encodeURIComponent(t.post)+'\')">&#128203; Copy full post</button>' +
+        '<button class="q-btn" onclick="cp(this,\''+encodeURIComponent(t.hashtags)+'\')">Copy hashtags</button>' +
+        '<button class="mark-btn" onclick="toggleMark(this,\'t'+i+'\')">&#10003; Mark as posted</button>' +
       '</div>';
     list.appendChild(div);
   });
 }
 
-// ── DAILY BRIEF ───────────────────────────────────────────────
-function renderBrief() {
-  var tipEl  = document.getElementById('brief-tip');
-  var accEl  = document.getElementById('brief-accounts');
-  var comEl  = document.getElementById('brief-comments');
-
-  if(!data.brief.length){
-    tipEl.innerHTML='';
-    accEl.innerHTML='<div class="empty">No brief loaded. Import Daily Brief CSV.</div>';
-    comEl.innerHTML='';
-    return;
-  }
-
-  // Daily tip
-  var tip = data.brief.find(function(r){ return r.tip; });
-  if(tip) {
-    tipEl.innerHTML = '<div class="tip-card"><div class="tip-label">TODAY\'S GROWTH TIP</div><div class="tip-text">' + tip.tip + '</div></div>';
-  }
-
-  // Target accounts
-  var accounts = data.brief.filter(function(r){ return r.account; });
-  if(accounts.length) {
-    accEl.innerHTML = '<div class="section-title">TARGET ACCOUNTS (' + accounts.length + ')</div>';
-    accounts.forEach(function(a){
-      accEl.innerHTML +=
-        '<div class="brief-account">' +
-          '<div class="brief-username">' + (a.account||'—') + '</div>' +
-          '<div class="brief-why">' + (a.why||'—') + '</div>' +
-          '<div class="brief-meta">' +
-            '<span>' + (a.followers||'—') + '</span>' +
-            '<span>Best time: ' + (a.best_time||'—') + '</span>' +
-          '</div>' +
-        '</div>';
-    });
-  }
-
-  // Comment scripts
-  var comments = data.brief.filter(function(r){ return r.comment; });
-  if(comments.length) {
-    comEl.innerHTML = '<div class="section-title" style="margin-top:16px;">COMMENT SCRIPTS (' + comments.length + ')</div>';
-    comments.forEach(function(c,i){
-      comEl.innerHTML +=
-        '<div class="comment-card">' +
-          '<div class="comment-ctx">USE ON: ' + (c.ctx||'—') + '</div>' +
-          '<div class="comment-text">' + (c.comment||'—') + '</div>' +
-          '<button class="cbtn" onclick="cp(this,\'' + encodeURIComponent(c.comment) + '\')">Copy comment</button>' +
-        '</div>';
-    });
-  }
+function expandText(id, btn){
+  var el=document.getElementById(id);
+  el.classList.toggle('expanded');
+  btn.textContent=el.classList.contains('expanded')?'Show less ↑':'Read more ↓';
 }
 
-// ── COPY HELPER ───────────────────────────────────────────────
-function cp(btn, encoded) {
+// ── BRIEF ────────────────────────────────────────────────────
+function renderBrief(){
+  var el=document.getElementById('brief-content');
+  if(!data.brief.length){
+    el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Import Daily Brief CSV</div><button class="empty-cta" onclick="showImport()">Import CSV</button></div>';
+    return;
+  }
+  var tip=data.brief.find(function(r){return r.tip;});
+  var html='';
+  if(tip){
+    html+='<div class="brief-tip"><div class="tip-lbl">TODAY\'S GROWTH TIP</div><div class="tip-txt">'+tip.tip+'</div></div>';
+  }
+  var accs=data.brief.filter(function(r){return r.account;});
+  if(accs.length){
+    html+='<div class="section-head">TARGET ACCOUNTS <span class="section-count">'+accs.length+' today</span></div>';
+    accs.forEach(function(a){
+      html+='<div class="account-card">' +
+        '<div class="acc-top">' +
+          '<div class="acc-handle">'+(a.account||'—')+'</div>' +
+          '<div class="acc-time">'+(a.best_time||'—')+'</div>' +
+        '</div>' +
+        '<div class="acc-why">'+(a.why||'—')+'</div>' +
+        '<div class="acc-meta">' +
+          '<div class="acc-pill">&#128101; '+(a.followers||'—')+'</div>' +
+          '<div class="acc-pill">&#127775; '+(a.niche||'—')+'</div>' +
+        '</div>' +
+      '</div>';
+    });
+  }
+  var coms=data.brief.filter(function(r){return r.comment;});
+  if(coms.length){
+    html+='<div class="section-head" style="margin-top:20px;">COMMENT SCRIPTS <span class="section-count">'+coms.length+' scripts</span></div>';
+    coms.forEach(function(c,i){
+      html+='<div class="comment-card">' +
+        '<div class="comment-ctx">USE ON: '+(c.ctx||'—')+'</div>' +
+        '<div class="comment-txt">'+(c.comment||'—')+'</div>' +
+        '<button class="copy-btn" onclick="cp(this,\''+encodeURIComponent(c.comment||'')+'\')">&#128203; Copy comment</button>' +
+      '</div>';
+    });
+  }
+  el.innerHTML=html;
+}
+
+// ── COPY ─────────────────────────────────────────────────────
+function cp(btn,encoded){
   navigator.clipboard.writeText(decodeURIComponent(encoded)).then(function(){
-    var orig = btn.textContent;
-    btn.textContent = 'Copied!';
-    setTimeout(function(){ btn.textContent = orig; }, 1500);
+    var orig=btn.textContent;
+    btn.textContent='✓ Copied!';
+    btn.style.color='#22c55e';
+    setTimeout(function(){btn.textContent=orig;btn.style.color='';},1500);
+  }).catch(function(){
+    // Fallback for older iOS
+    var ta=document.createElement('textarea');
+    ta.value=decodeURIComponent(encoded);
+    document.body.appendChild(ta);
+    ta.select();document.execCommand('copy');
+    document.body.removeChild(ta);
+    var orig=btn.textContent;
+    btn.textContent='✓ Copied!';
+    setTimeout(function(){btn.textContent=orig;},1500);
   });
 }
 
-// ── SWIPE SUPPORT ─────────────────────────────────────────────
-var tx = 0;
-document.addEventListener('touchstart', function(e){ tx = e.touches[0].clientX; }, {passive:true});
-document.addEventListener('touchend', function(e){
-  var d = tx - e.changedTouches[0].clientX;
-  if(Math.abs(d) > 50 && document.getElementById('section-carousels').classList.contains('active')){
-    d > 0 ? nextSlide() : prevSlide();
+// ── SWIPE ────────────────────────────────────────────────────
+var tx=0;
+document.addEventListener('touchstart',function(e){tx=e.touches[0].clientX;},{passive:true});
+document.addEventListener('touchend',function(e){
+  var d=tx-e.changedTouches[0].clientX;
+  if(Math.abs(d)>50&&document.getElementById('section-carousels').classList.contains('active')){
+    d>0?nextSlide():prevSlide();
   }
-}, {passive:true});
+},{passive:true});
 </script>
 </body>
 </html>
