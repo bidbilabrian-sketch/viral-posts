@@ -539,35 +539,38 @@ function buildSlides(post){
   var hook=post.hook||'YOUR HOOK HERE';
   var topic=(post.topic||'AI TOOLS').toUpperCase();
   var total=post.slides.length+3;
-  var pad='clamp(28px,7%,44px)';
 
-  // ── SLIDE 1: HOOK (black) ──────────────────────────────
+  // ── SHARED STYLE TOKENS (matching real zenvault.co posts) ──
+  var PAD='32px';
+  var FONT_SANS='"Arial Black","Arial Bold",Arial,sans-serif';
+  var FONT_SERIF='Georgia,serif';
+  var FONT_BODY='Arial,Helvetica,sans-serif';
+
+  // ── SLIDE 1: COVER (dark) ─────────────────────────────
   slides.push(
-    '<div id="sr" style="width:100%;height:100%;background:#0a0a0a;display:flex;flex-direction:column;padding:'+pad+';font-family:Georgia,serif;box-sizing:border-box;">' +
-      // top bar
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:auto;">' +
+    '<div id="sr" style="width:100%;height:100%;background:#0d0d0d;display:flex;flex-direction:column;padding:'+PAD+';font-family:'+FONT_SERIF+';box-sizing:border-box;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;">' +
         '<div style="display:flex;align-items:center;gap:8px;">' +
-          '<div style="width:18px;height:2px;background:#fff;opacity:0.35;"></div>' +
-          '<span style="font-size:8px;letter-spacing:3px;color:#fff;opacity:0.25;font-family:sans-serif;">'+topic+'</span>' +
+          '<div style="width:20px;height:1.5px;background:rgba(255,255,255,0.35);"></div>' +
+          '<span style="font-size:9px;letter-spacing:0.2em;color:rgba(255,255,255,0.3);font-family:'+FONT_BODY+';">'+topic+'</span>' +
         '</div>' +
-        '<span style="font-size:8px;color:#fff;opacity:0.18;font-family:sans-serif;">@zenvault.co</span>' +
+        '<span style="font-size:9px;color:rgba(255,255,255,0.2);font-family:'+FONT_BODY+';">@zenvault.co</span>' +
       '</div>' +
-      // CENTER content
-      '<div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:20px;">' +
-        '<div style="font-size:clamp(24px,6.5vw,44px);font-weight:900;color:#fff;line-height:1.05;letter-spacing:-0.5px;">'+hook+'</div>' +
-        '<div style="width:44px;height:3px;background:#fff;opacity:0.2;"></div>' +
-        '<div style="font-size:11px;color:#fff;opacity:0.28;font-family:sans-serif;letter-spacing:3px;font-weight:600;">SWIPE TO LEARN &#8594;</div>' +
+      '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:8px;">' +
+        '<div style="font-size:clamp(28px,7vw,48px);font-weight:900;color:#fff;line-height:1.08;font-family:'+FONT_SERIF+';margin-bottom:14px;">'+hook+'</div>' +
+        '<div style="width:48px;height:2px;background:rgba(255,255,255,0.25);margin-bottom:14px;"></div>' +
+        '<div style="font-size:9px;letter-spacing:0.2em;color:rgba(255,255,255,0.35);font-family:'+FONT_BODY+';font-weight:700;">SWIPE TO LEARN &#8594;</div>' +
       '</div>' +
-      // bottom counter
-      '<div style="display:flex;justify-content:flex-start;margin-top:auto;padding-top:16px;">' +
-        '<div style="padding:6px 12px;border:1px solid rgba(255,255,255,0.15);border-radius:5px;">' +
-          '<span style="font-size:9px;letter-spacing:2px;color:#fff;opacity:0.45;font-family:sans-serif;">1 / '+total+'</span>' +
+      '<div style="display:flex;justify-content:flex-start;margin-top:20px;">' +
+        '<div style="padding:5px 11px;border:1px solid rgba(255,255,255,0.15);border-radius:4px;">' +
+          '<span style="font-size:9px;letter-spacing:0.12em;color:rgba(255,255,255,0.4);font-family:'+FONT_BODY+';">1 / '+total+'</span>' +
         '</div>' +
       '</div>' +
     '</div>'
   );
 
-  // ── SLIDES 2-N: POINT SLIDES (white/light grey) ────────
+  // ── SLIDES 2-N: POINT SLIDES ───────────────────────────
+  // Alternates: dark (#0d0d0d) / light (#f0efe9) matching your real posts
   post.slides.forEach(function(s,i){
     var parts=s.split(':');
     var raw=parts[0]||'';
@@ -575,74 +578,76 @@ function buildSlides(post){
     var m=raw.match(/\[(\d+)\]\s*(.*)/);
     var num=m?m[1]:String(i+1).padStart(2,'0');
     var head=(m?m[2]:raw).toUpperCase();
-    // alternate white / very light grey
-    var bg=i%2===0?'#ffffff':'#f5f5f5';
     var slideNum=i+2;
 
+    // Dark slides on odd index, light on even — matching your real page pattern
+    var isDark=i%2!==0;
+    var bg=isDark?'#0d0d0d':'#f0efe9';
+    var textPrimary=isDark?'#ffffff':'#0d0d0d';
+    var textBody=isDark?'rgba(255,255,255,0.7)':'#444444';
+    var textMeta=isDark?'rgba(255,255,255,0.2)':'rgba(0,0,0,0.2)';
+    var dividerColor=isDark?'rgba(255,255,255,0.12)':'rgba(0,0,0,0.12)';
+    var badgeBg=isDark?'#ffffff':'#0d0d0d';
+    var badgeTxt=isDark?'#0d0d0d':'#ffffff';
+    var wmColor=isDark?'rgba(255,255,255,0.1)':'rgba(0,0,0,0.1)';
+
     slides.push(
-      '<div id="sr" style="width:100%;height:100%;background:'+bg+';display:flex;flex-direction:column;padding:'+pad+';font-family:Georgia,serif;box-sizing:border-box;">' +
-        // top bar
-        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:auto;">' +
-          '<span style="font-size:8px;letter-spacing:3px;color:#0a0a0a;opacity:0.2;font-family:sans-serif;font-weight:700;">POINT</span>' +
-          '<span style="font-size:8px;color:#0a0a0a;opacity:0.15;font-family:sans-serif;">'+slideNum+' / '+total+'</span>' +
+      '<div id="sr" style="width:100%;height:100%;background:'+bg+';display:flex;flex-direction:column;padding:'+PAD+';box-sizing:border-box;">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+          '<span style="font-size:9px;letter-spacing:0.2em;color:'+textMeta+';font-family:'+FONT_BODY+';font-weight:700;">POINT</span>' +
+          '<span style="font-size:9px;color:'+textMeta+';font-family:'+FONT_BODY+';">'+slideNum+' / '+total+'</span>' +
         '</div>' +
-        // CENTER content — this is the key fix
-        '<div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:18px;">' +
-          // number badge
-          '<div style="width:36px;height:36px;border-radius:50%;background:#0a0a0a;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' +
-            '<span style="font-size:12px;font-weight:800;color:#fff;font-family:sans-serif;">'+num+'</span>' +
+        '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:6px;">' +
+          '<div style="width:34px;height:34px;border-radius:50%;background:'+badgeBg+';display:flex;align-items:center;justify-content:center;margin-bottom:14px;flex-shrink:0;">' +
+            '<span style="font-size:12px;font-weight:900;color:'+badgeTxt+';font-family:'+FONT_BODY+';">'+num+'</span>' +
           '</div>' +
-          // HEADLINE — big and bold
-          '<div style="font-size:clamp(22px,6vw,38px);font-weight:900;color:#0a0a0a;line-height:1.08;letter-spacing:-0.3px;">'+head+'</div>' +
-          // divider
-          '<div style="width:36px;height:3px;background:#0a0a0a;opacity:0.15;border-radius:2px;"></div>' +
-          // BODY — larger and darker than before
-          '<div style="font-size:clamp(14px,3.5vw,20px);color:#222;font-family:sans-serif;line-height:1.65;font-weight:400;">'+body+'</div>' +
+          '<div style="font-size:clamp(26px,6.5vw,42px);font-weight:900;color:'+textPrimary+';line-height:1.05;letter-spacing:-0.02em;font-family:'+FONT_SANS+';margin-bottom:12px;text-transform:uppercase;">'+head+'</div>' +
+          '<div style="width:44px;height:2px;background:'+dividerColor+';margin-bottom:12px;"></div>' +
+          '<div style="font-size:clamp(13px,3.2vw,17px);color:'+textBody+';font-family:'+FONT_BODY+';line-height:1.65;font-weight:400;">'+body+'</div>' +
         '</div>' +
-        // bottom watermark only — no ghost number
-        '<div style="display:flex;justify-content:flex-end;margin-top:auto;padding-top:14px;">' +
-          '<span style="font-size:8px;color:#0a0a0a;opacity:0.12;font-family:sans-serif;letter-spacing:1px;">@zenvault.co</span>' +
+        '<div style="display:flex;justify-content:flex-end;margin-top:18px;">' +
+          '<span style="font-size:8px;color:'+wmColor+';font-family:'+FONT_BODY+';letter-spacing:0.08em;">@zenvault.co</span>' +
         '</div>' +
       '</div>'
     );
   });
 
-  // ── SAVE REMINDER ──────────────────────────────────────
+  // ── SAVE SLIDE (light background, matching your real slide 7) ──
   slides.push(
-    '<div id="sr" style="width:100%;height:100%;background:#0a0a0a;display:flex;flex-direction:column;padding:'+pad+';font-family:Georgia,serif;box-sizing:border-box;">' +
-      '<div style="display:flex;justify-content:space-between;margin-bottom:auto;">' +
-        '<span style="font-size:8px;letter-spacing:3px;color:#fff;opacity:0.2;font-family:sans-serif;font-weight:700;">BOOKMARK THIS</span>' +
-        '<span style="font-size:8px;color:#fff;opacity:0.15;font-family:sans-serif;">'+(post.slides.length+2)+' / '+total+'</span>' +
+    '<div id="sr" style="width:100%;height:100%;background:#f0efe9;display:flex;flex-direction:column;padding:'+PAD+';box-sizing:border-box;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+        '<span style="font-size:9px;letter-spacing:0.2em;color:rgba(0,0,0,0.2);font-family:'+FONT_BODY+';font-weight:700;">SAVE THIS</span>' +
+        '<span style="font-size:9px;color:rgba(0,0,0,0.15);font-family:'+FONT_BODY+';">'+(post.slides.length+2)+' / '+total+'</span>' +
       '</div>' +
-      '<div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:20px;">' +
-        // bookmark icon visual
-        '<div style="width:32px;height:40px;background:#fff;border-radius:3px;position:relative;overflow:hidden;">' +
-          '<div style="position:absolute;bottom:0;left:0;width:100%;height:40%;background:#0a0a0a;clip-path:polygon(0 100%,50% 60%,100% 100%);"></div>' +
+      '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:6px;">' +
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">' +
+          '<div style="width:30px;height:30px;background:#0d0d0d;border-radius:3px;flex-shrink:0;"></div>' +
+          '<span style="font-size:9px;letter-spacing:0.2em;color:rgba(0,0,0,0.3);font-family:'+FONT_BODY+';font-weight:700;">BOOKMARK THIS</span>' +
         '</div>' +
-        '<div style="font-size:clamp(22px,5.5vw,36px);font-weight:900;color:#fff;line-height:1.1;">Save this post — you\'ll need it later.</div>' +
-        '<div style="width:44px;height:3px;background:#fff;opacity:0.2;"></div>' +
-        '<div style="font-size:clamp(13px,3.2vw,18px);color:#fff;opacity:0.55;font-family:sans-serif;line-height:1.65;">Most people scroll past. The ones who save it are the ones who actually change. Don\'t be like most people.</div>' +
+        '<div style="font-size:clamp(24px,6vw,38px);font-weight:900;color:#0d0d0d;line-height:1.1;font-family:'+FONT_SERIF+';margin-bottom:12px;">Save this post — you\'ll need it later.</div>' +
+        '<div style="width:44px;height:2px;background:rgba(0,0,0,0.12);margin-bottom:12px;"></div>' +
+        '<div style="font-size:clamp(13px,3.2vw,17px);color:#555;font-family:'+FONT_BODY+';line-height:1.65;">Most people scroll past. The ones who save it are the ones who actually change. Don\'t be like most people.</div>' +
       '</div>' +
-      '<div style="display:flex;justify-content:flex-end;margin-top:auto;padding-top:14px;">' +
-        '<span style="font-size:8px;color:#fff;opacity:0.15;font-family:sans-serif;">@zenvault.co</span>' +
+      '<div style="display:flex;justify-content:flex-end;margin-top:18px;">' +
+        '<span style="font-size:8px;color:rgba(0,0,0,0.1);font-family:'+FONT_BODY+';letter-spacing:0.08em;">@zenvault.co</span>' +
       '</div>' +
     '</div>'
   );
 
-  // ── CTA SLIDE ──────────────────────────────────────────
+  // ── CTA SLIDE (dark, matching your real slide 8) ────────
   slides.push(
-    '<div id="sr" style="width:100%;height:100%;background:#0a0a0a;display:flex;flex-direction:column;padding:'+pad+';font-family:Georgia,serif;box-sizing:border-box;">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:auto;">' +
-        '<div style="width:18px;height:2px;background:#fff;opacity:0.3;"></div>' +
-        '<span style="font-size:8px;letter-spacing:3px;color:#fff;opacity:0.2;font-family:sans-serif;">FOLLOW FOR MORE</span>' +
+    '<div id="sr" style="width:100%;height:100%;background:#0d0d0d;display:flex;flex-direction:column;padding:'+PAD+';font-family:'+FONT_SERIF+';box-sizing:border-box;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+        '<div style="width:20px;height:1.5px;background:rgba(255,255,255,0.3);"></div>' +
+        '<span style="font-size:9px;letter-spacing:0.2em;color:rgba(255,255,255,0.2);font-family:'+FONT_BODY+';">FOLLOW FOR MORE</span>' +
       '</div>' +
-      '<div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:20px;">' +
-        '<div style="font-size:clamp(20px,5vw,32px);font-weight:900;color:#fff;line-height:1.15;">'+(post.cta||'Follow @zenvault.co for daily AI tools that build real income.')+'</div>' +
-        '<div style="width:44px;height:3px;background:#fff;opacity:0.15;"></div>' +
-        '<div style="font-size:clamp(12px,3vw,16px);color:#fff;opacity:0.3;font-family:sans-serif;">New carousel every day. No fluff. Just tools that work.</div>' +
+      '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:6px;">' +
+        '<div style="font-size:clamp(24px,6vw,38px);font-weight:700;color:#fff;line-height:1.15;font-family:'+FONT_SERIF+';margin-bottom:12px;">'+(post.cta||'Follow @zenvault.co for daily AI tools that build real income.')+'</div>' +
+        '<div style="width:44px;height:2px;background:rgba(255,255,255,0.15);margin-bottom:12px;"></div>' +
+        '<div style="font-size:clamp(12px,3vw,15px);color:rgba(255,255,255,0.4);font-family:'+FONT_BODY+';line-height:1.6;">New carousel every day. No fluff. Just tools that work.</div>' +
       '</div>' +
-      '<div style="border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:14px 22px;margin-top:24px;display:inline-block;width:fit-content;">' +
-        '<span style="font-size:clamp(13px,3.2vw,18px);letter-spacing:3px;color:#fff;font-family:sans-serif;font-weight:700;">@ZENVAULT.CO</span>' +
+      '<div style="border:1px solid rgba(255,255,255,0.18);border-radius:6px;padding:13px 20px;margin-top:20px;text-align:center;">' +
+        '<span style="font-size:clamp(11px,2.8vw,15px);letter-spacing:0.18em;color:rgba(255,255,255,0.8);font-family:'+FONT_BODY+';font-weight:700;">@ZENVAULT.CO</span>' +
       '</div>' +
     '</div>'
   );
